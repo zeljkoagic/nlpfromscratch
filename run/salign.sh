@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-# HOME=/home/zagic/nlpfromscratch
-HOME=/Users/zagic/Work/cph/pycharm_projects/nlpfromscratch
+HOME=/home/zagic/nlpfromscratch
+# HOME=/Users/zagic/Work/cph/pycharm_projects/nlpfromscratch
 
 > $HOME/run/commands_salign.txt
 
