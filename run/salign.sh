@@ -15,7 +15,7 @@ for l1 in `cat $HOME/data/lists/sources.txt`; do
     for l2 in `cat $HOME/data/lists/sources.txt`; do
         if [ "$l1" != "$l2" ]; then
             # perform sentence alignment
-            echo "$HOME/tools/salign/hunalign-1.1/src/hunalign/hunalign -utf -bisent -cautious -realign /dev/null $HOME/data/raw/${l1}.txt $HOME/data/raw/${l2}.txt 1> $HOME/data/salign/${l1}-${l2}.sal 2> $HOME/data/logs/${l1}-${l2}.sal.log" >> $HOME/run/commands_salign.txt
+            echo "$HOME/tools/salign/hunalign-1.1/src/hunalign/hunalign -utf -bisent -cautious -realign /dev/null $HOME/data/raw/${l1}.osl $HOME/data/raw/${l2}.osl 1> $HOME/data/salign/${l1}-${l2}.sal 2> $HOME/data/logs/${l1}-${l2}.sal.log" >> $HOME/run/commands_salign.txt
         fi
     done
 done
