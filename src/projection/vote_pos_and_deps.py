@@ -14,6 +14,7 @@ parser = argparse.ArgumentParser(description="Votes.")
 
 parser.add_argument("--target", required=True, help="target CoNLL file")
 parser.add_argument("--votes", required=True, help="file with all votes merged")
+parser.add_argument("--stop_after", required=False, help="stop after n sentences")
 parser.add_argument('--inner_vote_pos', action='store_true', help="intra-language POS tag voting")
 parser.add_argument('--inner_vote_labels', action='store_true', help="intra-language dependency label voting")
 parser.add_argument('--pretagged', action='store_true', help="use preassigned target POS tags instead of voted tags")
@@ -34,7 +35,8 @@ def update_scores(gold_token, system_token):
         update[3] = 1.0
     return update
 
-count = 0
+token_count = 0
+sentence_count = 0
 scores = np.array([0.0, 0.0, 0.0, 0.0])  # POS, LAS, UAS, LA
 
 current_sentence_matrix = []
@@ -112,6 +114,8 @@ for line in open(args.votes):
 
         if not skip_sentence:
 
+            sentence_count += 1
+
             current_sentence_matrix = np.array(current_sentence_matrix)  # TODO Should be np.array to begin with!
             decoded_heads = cle.mdst(np.array(current_sentence_matrix))  # do the MST magic
 
@@ -134,7 +138,7 @@ for line in open(args.votes):
                 token.deprel = current_dep_labels[jt]
 
                 # evaluation TODO Makes sense only if the target language is one of the source languages
-                count += 1
+                token_count += 1
                 scores += update_scores(old_token, token)
 
                 # print(token, " ".join(map(str, current_sentence_matrix[jt, ])))
@@ -147,5 +151,8 @@ for line in open(args.votes):
         current_pos_tags = []
         current_dep_labels = []
 
-scores = scores / count
+        if args.stop_after and int(args.stop_after) == sentence_count:
+            break
+
+scores = scores / token_count
 print(" ".join(map(str, scores)), time.time() - start_time, file=sys.stderr)
