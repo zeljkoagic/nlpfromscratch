@@ -60,6 +60,14 @@ def get_next_sentence(conll_file_handle):
     return next_sentence
 
 
+def s_gen(conll_file_handle, iterator):
+    while True:
+        data = iterator(conll_file_handle)
+        if not data:
+            break
+        yield data
+
+
 def print_conll(sentences):
     """Prints CoNLL sentences to stdout."""
     for sentence in sentences:

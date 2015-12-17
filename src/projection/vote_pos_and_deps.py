@@ -6,6 +6,7 @@ import mst.cle as cle
 import string
 import sys
 import time
+import copy
 
 start_time = time.time()  # timing the script
 
@@ -120,7 +121,7 @@ for line in open(args.votes):
                 old_head = token.head
                 old_label = token.deprel
 
-                old_token = token
+                old_token = copy.copy(token)
 
                 # get the decoded head
                 token.head = decoded_heads[jt]
@@ -134,17 +135,7 @@ for line in open(args.votes):
 
                 # evaluation TODO Makes sense only if the target language is one of the source languages
                 count += 1
-                #if token.cpos == old_pos:
-                #    scores[0] += 1
-                #if token.head == old_head and token.deprel == old_label:
-                ##    scores[1] += 1
-                #if token.head == old_head:
-                #    scores[2] += 1
-                ##if token.deprel == old_label:
-                #    scores[3] += 1
-
                 scores += update_scores(old_token, token)
-                print(scores, old_token, token, file=sys.stderr)
 
                 # print(token, " ".join(map(str, current_sentence_matrix[jt, ])))
                 print(token)  # we don't need the weights anymore

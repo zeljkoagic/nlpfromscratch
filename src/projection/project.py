@@ -43,7 +43,7 @@ word_alignments, similarity = align.read_word_alignments(args.word_alignment)
 # get the source and target conll file handlers
 source_file_handle = open(args.source)
 target_file_handle = open(args.target)
-
+"""
 # sentence counters, word alignment counter for matching to sentence alignments
 source_sid_counter = 0
 target_sid_counter = 0
@@ -124,3 +124,6 @@ for source_sid, target_data in sentence_alignments.items():
     print()
 
 print("Execution time: %s sec" % (time.time() - start_time), file=sys.stderr)
+"""
+for s in conll.s_gen(target_file_handle, conll.get_next_sentence):
+    print("x")
