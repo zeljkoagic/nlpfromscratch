@@ -25,14 +25,20 @@ parser.add_argument('--use_similarity', action='store_true', help="use word alig
 args = parser.parse_args()
 
 # choose weight matrix normalizers
-normalize = {"softmax": norm.softmax,
-             "rank": partial(norm.rank, use_integers=False),
-             "intrank": partial(norm.rank, use_integers=True),
-             "stdev": norm.stdev_norm,
-             "identity": lambda x: x}
+normalizers = {"softmax": norm.softmax,
+               "rank": partial(norm.rank, use_integers=False),
+               "intrank": partial(norm.rank, use_integers=True),
+               "stdev": norm.stdev_norm,
+               "identity": lambda x: x}
 
-normalize_before_projection = normalize[args.norm_before]
-normalize_after_projection = normalize[args.norm_after]
+normalize_before_projection = normalizers[args.norm_before]
+normalize_after_projection = normalizers[args.norm_after]
+
+# source sentence getter is determined by args.trees
+source_data_getters = {True: conll.get_next_sentence_and_tree,
+                       False: conll.get_next_sentence_and_graph}
+
+get_source_data = source_data_getters[args.trees]
 
 # get the sentence alignments
 sentence_alignments = align.read_sentence_alignments(args.sentence_alignment)
@@ -43,47 +49,40 @@ word_alignments, similarity = align.read_word_alignments(args.word_alignment)
 # get the source and target conll file handlers
 source_file_handle = open(args.source)
 target_file_handle = open(args.target)
-"""
+
 # sentence counters, word alignment counter for matching to sentence alignments
 source_sid_counter = 0
 target_sid_counter = 0
 walign_counter = 0
 
-# iterate through sentence alignments
-for source_sid, target_data in sentence_alignments.items():
-    target_sid, sal_confidence = target_data
+for target_sentence in conll.sentences(target_file_handle, sentence_getter=conll.get_next_sentence):
+    # target sentence found in sentence alignment
+    if target_sid_counter in sentence_alignments:
+        source_sid, sal_confidence = sentence_alignments[target_sid_counter]
+    else:
+        for _ in target_sentence:  # if not found, just print out dummy to maintain the number of lines/sentences
+            print("_")
+        print()
+        target_sid_counter += 1
+        continue
 
     # skip source and target sentences that are not in the sentence alignments
     while source_sid_counter != source_sid:
         _ = conll.get_next_sentence_and_graph(source_file_handle)
         source_sid_counter += 1
 
-    while target_sid_counter != target_sid:
-        target_sentence = conll.get_next_sentence(target_file_handle)
-        # print to ensure the same number of lines for each projection to target
-        for _ in target_sentence:
-            print("_")
-        print()
-        target_sid_counter += 1
-
     # check if sentence ids match
     assert source_sid_counter == source_sid
-    assert target_sid_counter == target_sid
 
     # now that the sentence ids match, get the sentence, POS, and graph from the source
-    if args.trees:
-        source_sentence, S, source_pos_tags, source_dep_labels = conll.get_next_sentence_and_tree(source_file_handle)
-    else:
-        source_sentence, S, source_pos_tags, source_dep_labels = conll.get_next_sentence_and_graph(source_file_handle)
+    source_sentence, S, source_pos_tags, source_dep_labels = get_source_data(source_file_handle)
+
+    # source and target sentences are retrieved, increment counters
+    source_sid_counter += 1
+    target_sid_counter += 1
 
     # source matrix normalization
     S = normalize_before_projection(S)
-
-    # for the target, we just need the sentence part
-    target_sentence = conll.get_next_sentence(target_file_handle)
-
-    source_sid_counter += 1
-    target_sid_counter += 1
 
     # get word alignments for that sentence pair
     walign_pairs, walign_probs = word_alignments[walign_counter]
@@ -124,6 +123,3 @@ for source_sid, target_data in sentence_alignments.items():
     print()
 
 print("Execution time: %s sec" % (time.time() - start_time), file=sys.stderr)
-"""
-for s in conll.s_gen(target_file_handle, conll.get_next_sentence):
-    print("x")

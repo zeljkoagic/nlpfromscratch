@@ -20,7 +20,7 @@ def read_sentence_alignments(filename):
             src_id = int(line[0])
             trg_id = int(line[1])
             confidence = float(line[2])
-            saligns[src_id] = [trg_id, confidence]
+            saligns[trg_id] = [src_id, confidence]
 
     return saligns
 

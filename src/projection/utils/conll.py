@@ -60,12 +60,17 @@ def get_next_sentence(conll_file_handle):
     return next_sentence
 
 
-def s_gen(conll_file_handle, iterator):
+def sentences(conll_file_handle, sentence_getter):
+    """TODO
+    :param conll_file_handle:
+    :param sentence_getter:
+    :return:
+    """
     while True:
-        data = iterator(conll_file_handle)
-        if not data:
+        next_sentence = sentence_getter(conll_file_handle)
+        if not next_sentence:
             break
-        yield data
+        yield next_sentence
 
 
 def print_conll(sentences):
