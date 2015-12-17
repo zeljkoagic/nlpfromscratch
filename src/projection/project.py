@@ -109,8 +109,8 @@ for target_sentence in conll.sentences(target_file_handle, sentence_getter=conll
     # print the results
     for token in target_sentence:
         # get the POS projections for the current target token
-        projected_tags = P.get(token.idx)# if token.idx in P else Counter({"_": 0})
-        projected_labels = L.get(token.idx)# if token.idx in L else Counter({"_": 0})
+        projected_tags = P.get(token.idx) if token.idx in P else Counter({"_": 0})
+        projected_labels = L.get(token.idx) if token.idx in L else Counter({"_": 0})
 
         print("%s\t%s\t%s" % (" ".join(["{}:{}".format(t[0], t[1]) for t in projected_tags.most_common()]),
                               " ".join(["{}:{}".format(l[0], l[1]) for l in projected_labels.most_common()]),
