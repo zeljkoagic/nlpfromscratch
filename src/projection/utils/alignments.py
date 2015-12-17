@@ -95,7 +95,8 @@ def project_dependencies_to_target(S, A):
             for h in range(m_plus_one):
                 np.dot(A[d].reshape(-1, 1), A[h].reshape(1, -1), out=T_edge)
                 T_edge *= S[d, h]  # multiply by confidence of edge h->d from the source parse
-                T += T_edge
+                # T += T_edge
+                np.maximum(T, T_edge, out=T)
     return T
 
 
