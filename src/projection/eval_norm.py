@@ -10,6 +10,7 @@ import copy
 from pathlib import Path
 from multiprocessing import Pool
 import pandas as pd
+from functools import partial
 
 start_time = time.time()  # timing the script
 
@@ -28,16 +29,14 @@ def threshold_normalize(T_proj, threshold=0.1, binary=False):
 
     return sum_normalize(T_proj)
 
-normalize_fn = threshold_normalize
-
-def get_prediction_score(filename):
+def get_prediction_score(filename, normalize_fn):
     data = np.load(str(filename))
     T_projection = data['projection_tensor']
     source_languages = list(data['source_languages'])
     heads = list(data['heads'])
 
     # Normalization
-    M_projection = normalize_fn(T_projection)
+    M_projection = normalize_fn(T_projection, threshold)
     decoded_heads = cle.mdst(M_projection)
 
     assert len(heads) == len(decoded_heads)
@@ -46,6 +45,9 @@ def get_prediction_score(filename):
     return uas
 
 
-pool = Pool(processes=20)
-scores = pool.map(get_prediction_score, args.projection_files)
-print(pd.Series(scores).describe())
+for threshold in range(10):
+    pool = Pool(processes=20)
+    normalize_fn = partial(threshold_normalize, threshold=threshold / 10)
+    score_fn = partial(get_prediction_score, normalize_fn=normalize_fn)
+    scores = pool.map(score_fn, args.projection_files)
+    print(pd.Series(scores).describe())
