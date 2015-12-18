@@ -121,11 +121,7 @@ for line in open(args.votes):
 
             jt = 0
             for token in current_sentence:
-                old_pos = token.cpos
-                old_head = token.head
-                old_label = token.deprel
-
-                old_token = copy.copy(token)
+                old_token = copy.copy(token)  # for evaluation
 
                 # get the decoded head
                 token.head = decoded_heads[jt]
