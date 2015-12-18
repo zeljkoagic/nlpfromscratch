@@ -13,7 +13,6 @@ for target in en; do
         fi
     done
 
-    # paste -d "#" $HOME/data/projections/*-${target}.proj \
-    #    | awk '{if(if(substr($1, 0, 1)=="#"){print ""}else{print}}' > $HOME/data/projections/${target}.all-proj
+    # paste -d "#" $HOME/data/projections/*-${target}.proj | awk '{if(substr($1, 0, 1)=="#"){print ""}else{print}}' > $HOME/data/projections/${target}.all-proj
 
 done

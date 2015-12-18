@@ -130,6 +130,13 @@ for line in open(args.votes):
             # unify the source language matrices into a single a matrix
             M_current_sentence = vote_weight_matrix(T_current_sentence)
 
+            # Dump the raw projections into a file, for debug purposes
+            raw_projections_filename = "{}.{}".format(args.target.name.split('.', 1)[0], sentence_count)
+            np.savez(raw_projections_filename,
+                     projection_tensor=T_current_sentence,
+                     source_languages=current_sentence_source_languages,
+                     heads=[token.head for token in current_sentence])
+
             decoded_heads = cle.mdst(M_current_sentence)  # do the MST magic
 
             jt = 0
