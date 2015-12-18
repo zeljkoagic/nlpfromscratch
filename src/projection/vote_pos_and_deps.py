@@ -156,5 +156,5 @@ for line in open(args.votes):
 
 scores = (scores / token_count) * 100
 
-with np.set_printoptions(precision=2, suppress=True):
-    print(" ".join(map(str, scores)), time.time() - start_time, file=sys.stderr)
+np.set_printoptions(precision=2, suppress=True)
+print(" ".join(map(str, scores)), time.time() - start_time, file=sys.stderr)
