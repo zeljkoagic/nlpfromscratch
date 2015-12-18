@@ -47,7 +47,7 @@ def get_prediction_score(filename, normalize_fn):
 
 for threshold in range(10):
     pool = Pool(processes=20)
-    normalize_fn = partial(threshold_normalize, threshold=threshold / 10)
+    normalize_fn = partial(threshold_normalize, threshold=threshold / 100)
     score_fn = partial(get_prediction_score, normalize_fn=normalize_fn)
     scores = pool.map(score_fn, args.projection_files)
     print(pd.Series(scores).describe())
