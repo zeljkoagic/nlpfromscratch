@@ -20,6 +20,16 @@ args = parser.parse_args()
 def sum_normalize(T_proj):
     return T_proj.sum(axis=2)
 
+def threshold_normalize(T_proj, threshold=0.1, binary=False):
+    mask = T_proj < threshold
+    T_proj[mask] = 0.0
+    if binary:
+        T_proj[~mask] = 1.0
+
+    return T_proj
+
+normalize_fn = threshold_normalize
+
 def get_prediction_score(filename):
     data = np.load(str(filename))
     T_projection = data['projection_tensor']
@@ -27,7 +37,7 @@ def get_prediction_score(filename):
     heads = list(data['heads'])
 
     # Normalization
-    M_projection = sum_normalize(T_projection)
+    M_projection = normalize_fn(T_projection)
     decoded_heads = cle.mdst(M_projection)
 
     assert len(heads) == len(decoded_heads)
