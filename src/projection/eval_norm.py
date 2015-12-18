@@ -26,7 +26,7 @@ def threshold_normalize(T_proj, threshold=0.1, binary=False):
     if binary:
         T_proj[~mask] = 1.0
 
-    return T_proj
+    return sum_normalize(T_proj)
 
 normalize_fn = threshold_normalize
 
