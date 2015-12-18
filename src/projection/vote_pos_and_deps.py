@@ -7,12 +7,13 @@ import string
 import sys
 import time
 import copy
+from pathlib import Path
 
 start_time = time.time()  # timing the script
 
 parser = argparse.ArgumentParser(description="Votes.")
 
-parser.add_argument("--target", required=True, help="target CoNLL file")
+parser.add_argument("--target", required=True, help="target CoNLL file", type=Path)
 parser.add_argument("--votes", required=True, help="file with all votes merged")
 parser.add_argument("--stop_after", required=False, help="stop after n sentences")
 parser.add_argument('--inner_vote_pos', action='store_true', help="intra-language POS tag voting")
@@ -20,7 +21,7 @@ parser.add_argument('--inner_vote_labels', action='store_true', help="intra-lang
 parser.add_argument('--pretagged', action='store_true', help="use preassigned target POS tags instead of voted tags")
 
 args = parser.parse_args()
-target_file_handle = open(args.target)
+target_file_handle = args.target.open()
 
 
 def update_scores(gold_token, system_token):
