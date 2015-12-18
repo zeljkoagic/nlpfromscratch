@@ -54,6 +54,8 @@ for line in open(args.votes):
     line = line.strip()
 
     if line and not skip_sentence:
+        current_sentence_source_languages.clear()
+
         # voting for tags, dependency labels and heads
         overall_pos_votes = Counter()
         overall_label_votes = Counter()
