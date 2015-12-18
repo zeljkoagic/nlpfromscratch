@@ -8,6 +8,8 @@ import sys
 import time
 import copy
 from pathlib import Path
+from multiprocessing import Pool
+import pandas as pd
 
 start_time = time.time()  # timing the script
 
@@ -18,8 +20,8 @@ args = parser.parse_args()
 def sum_normalize(T_proj):
     return T_proj.sum(axis=2)
 
-for projection_file in args.projection_files:
-    data = np.load(str(projection_file))
+def get_prediction_score(filename):
+    data = np.load(str(filename))
     T_projection = data['projection_tensor']
     source_languages = list(data['source_languages'])
     heads = list(data['heads'])
@@ -31,4 +33,9 @@ for projection_file in args.projection_files:
     assert len(heads) == len(decoded_heads)
     num_correct = sum(pred_head == gold_head for gold_head, pred_head in zip(heads, decoded_heads))
     uas = num_correct / len(heads)
-    print('{:.2f}'.format(uas))
+    return uas
+
+
+pool = Pool(processes=20)
+scores = pool.map(get_prediction_score, args.projection_files)
+print(pd.Series(scores).describe())
