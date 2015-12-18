@@ -155,6 +155,4 @@ for line in open(args.votes):
             break
 
 scores = (scores / token_count) * 100
-
-np.set_printoptions(precision=2, suppress=True)
 print(" ".join(map(str, scores)), time.time() - start_time, file=sys.stderr)
