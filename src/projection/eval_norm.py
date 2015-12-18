@@ -36,7 +36,7 @@ def get_prediction_score(filename, normalize_fn):
     heads = list(data['heads'])
 
     # Normalization
-    M_projection = normalize_fn(T_projection, threshold)
+    M_projection = normalize_fn(T_projection)
     decoded_heads = cle.mdst(M_projection)
 
     assert len(heads) == len(decoded_heads)
