@@ -97,6 +97,7 @@ def project_dependencies_to_target(S, A):
                 T_edge *= S[d, h]  # multiply by confidence of edge h->d from the source parse
                 # T += T_edge
                 np.maximum(T, T_edge, out=T)
+                # T = (T + T_edge) / 2
     return T
 
 

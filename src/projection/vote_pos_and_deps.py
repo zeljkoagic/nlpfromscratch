@@ -154,5 +154,7 @@ for line in open(args.votes):
         if args.stop_after and int(args.stop_after) == sentence_count:
             break
 
-scores = scores / token_count
-print(" ".join(map(str, scores)), time.time() - start_time, file=sys.stderr)
+scores = (scores / token_count) * 100
+
+with np.printoptions(precision=2, suppress=True):
+    print(" ".join(map(str, scores)), time.time() - start_time, file=sys.stderr)
