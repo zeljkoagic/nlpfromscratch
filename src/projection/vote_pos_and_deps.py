@@ -98,9 +98,11 @@ for line in open(args.votes):
             overall_label_votes.update(source_label_counter)
 
             # collect heads for current source
-            source_head_votes = np.array(list(map(float, source_head_votes.strip().split())))
-
-            projection_weights_per_token.append(source_head_votes)
+            head_scores = list(map(float, source_head_votes.strip().split()))
+            for i, val in enumerate(head_scores):
+                if i >= len(projection_weights_per_token):
+                    projection_weights_per_token.append([])
+                projection_weights_per_token[i].append(val)
 
         if not len(projection_weights_per_token):
             skip_sentence = True
