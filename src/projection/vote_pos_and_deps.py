@@ -39,10 +39,15 @@ token_count = 0
 sentence_count = 0
 scores = np.array([0.0, 0.0, 0.0, 0.0])  # POS, LAS, UAS, LA
 
-current_sentence_matrix = []
 current_pos_tags = []
 current_dep_labels = []
 skip_sentence = False  # skip sentences with empty sources
+current_sentence_tensor = []
+current_sentence_source_languages = []
+
+def vote_weight_matrix(T_current_sentence):
+    return T_current_sentence.sum(axis=2)
+
 
 for line in open(args.votes):
     line = line.strip()
@@ -56,14 +61,19 @@ for line in open(args.votes):
         # a line has n source languages delimited by "#"
         sources = line.split("#")
 
+        projection_weights_per_token = []
+        current_sentence_tensor.append(projection_weights_per_token)
+
         # iterate through blocks provided by singled-out sources
         for source in sources:
             labels_and_heads = source.split("\t")
-            if len(labels_and_heads) != 3:
+            # assert len(labels_and_heads) == 3
+            if len(labels_and_heads) != 4:
                 continue  # skip empty source
 
             # get POS and dependencies parts
-            source_pos_votes, source_label_votes, source_head_votes = labels_and_heads
+            source_language_name, source_pos_votes, source_label_votes, source_head_votes = labels_and_heads
+            current_sentence_source_languages.append(source_language_name)
 
             # turn POS part & label part into Counters
             source_pos_votes = source_pos_votes.split()
@@ -90,19 +100,15 @@ for line in open(args.votes):
             # collect heads for current source
             source_head_votes = np.array(list(map(float, source_head_votes.strip().split())))
 
-            # do weight summing
-            if overall_head_votes is None:
-                overall_head_votes = source_head_votes
-            else:
-                overall_head_votes += source_head_votes
+            projection_weights_per_token.append(source_head_votes)
 
-        if overall_head_votes is None:
-            skip_sentence = True  # all sources were empty, skip sentence
+        if not len(projection_weights_per_token):
+            skip_sentence = True
             continue
 
         current_pos_tags.append(overall_pos_votes.most_common(1)[0][0])
         current_dep_labels.append(overall_label_votes.most_common(1)[0][0])
-        current_sentence_matrix.append(overall_head_votes)
+        # current_sentence_matrix.append(overall_head_votes)
 
         # skip sentences with at least one placeholder "_" POS tag or dependency label
         if current_pos_tags[-1] == "_":  # or current_dep_labels[-1] == "_": TODO everything gets skipped if dep=="_"!
@@ -116,8 +122,13 @@ for line in open(args.votes):
 
             sentence_count += 1
 
-            current_sentence_matrix = np.array(current_sentence_matrix)  # TODO Should be np.array to begin with!
-            decoded_heads = cle.mdst(np.array(current_sentence_matrix))  # do the MST magic
+            # construct a 3-dim tensor where each slice along the third dimension corresponds
+            # to a weight matrix for a given source language
+            T_current_sentence = np.array(current_sentence_tensor)
+            # unify the source language matrices into a single a matrix
+            M_current_sentence = vote_weight_matrix(T_current_sentence)
+
+            decoded_heads = cle.mdst(M_current_sentence)  # do the MST magic
 
             jt = 0
             for token in current_sentence:
@@ -143,7 +154,7 @@ for line in open(args.votes):
             print()
 
         skip_sentence = False
-        current_sentence_matrix = []
+        current_sentence_tensor = []
         current_pos_tags = []
         current_dep_labels = []
 

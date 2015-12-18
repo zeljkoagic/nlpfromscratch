@@ -6,12 +6,13 @@ import utils.normalize as norm
 from functools import partial
 import sys
 import time
+from pathlib import Path
 
 start_time = time.time()  # timing the script
 
 parser = argparse.ArgumentParser(description="Projects dependency trees from source to target via word alignments.")
 
-parser.add_argument("--source", required=True, help="source CoNLL file")
+parser.add_argument("--source", required=True, help="source CoNLL file", type=Path)
 parser.add_argument("--target", required=True, help="target CoNLL file")
 parser.add_argument("--word_alignment", required=True, help="word alignments file")
 parser.add_argument("--sentence_alignment", required=True, help="sentence alignments file")
@@ -23,6 +24,8 @@ parser.add_argument('--binary', action='store_true', help="use binary alignments
 parser.add_argument('--use_similarity', action='store_true', help="use word alignment-derived language similarity proxy")
 
 args = parser.parse_args()
+
+source_language_name = args.source.stem
 
 # choose weight matrix normalizers
 normalizers = {"softmax": norm.softmax,
@@ -47,7 +50,7 @@ sentence_alignments = align.read_sentence_alignments(args.sentence_alignment)
 word_alignments, similarity = align.read_word_alignments(args.word_alignment)
 
 # get the source and target conll file handlers
-source_file_handle = open(args.source)
+source_file_handle = args.source.open()
 target_file_handle = open(args.target)
 
 # sentence counters, word alignment counter for matching to sentence alignments
@@ -112,7 +115,7 @@ for target_sentence in conll.sentences(target_file_handle, sentence_getter=conll
         projected_tags = P.get(token.idx) if token.idx in P else Counter({"_": 0})
         projected_labels = L.get(token.idx) if token.idx in L else Counter({"_": 0})
 
-        print("%s\t%s\t%s" % (" ".join(["{}:{}".format(t[0], t[1]) for t in projected_tags.most_common()]),
+        print("%s\t%s\t%s\t%s" % (source_language_name, " ".join(["{}:{}".format(t[0], t[1]) for t in projected_tags.most_common()]),
                               " ".join(["{}:{}".format(l[0], l[1]) for l in projected_labels.most_common()]),
                               " ".join(map(str, T[token.idx]))))
     print()
