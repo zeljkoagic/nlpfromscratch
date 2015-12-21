@@ -9,14 +9,8 @@ def softmax(sentence_matrix, temperature=1.0):
     :param temperature: softmax temperature
     :return: softmaxed weight matrix
     """
-    softmaxed = np.zeros_like(sentence_matrix)
-    np.exp(sentence_matrix / temperature)
-
-    for it in range(softmaxed.shape[0]):
-        exped = np.exp(sentence_matrix[it, ] / temperature)  # We normalize per row
-        softmaxed[it, ] = exped / np.sum(exped)
-
-    return softmaxed
+    m_exp = np.exp(sentence_matrix/temperature)
+    return (m_exp.T / m_exp.sum(axis=1)).T
 
 
 def rank(sentence_matrix, use_integers=False):
