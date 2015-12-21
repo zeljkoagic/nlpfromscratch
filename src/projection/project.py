@@ -22,6 +22,7 @@ parser.add_argument('--with_pp', action='store_true', help="project POS with ali
 parser.add_argument('--trees', action='store_true', help="project dependency trees instead of weight matrices")
 parser.add_argument('--binary', action='store_true', help="use binary alignments instead of alignment probabilities")
 parser.add_argument('--use_similarity', action='store_true', help="use word alignment-derived language similarity proxy")
+parser.add_argument("--stop_after", required=False, help="stop after n sentences")
 
 args = parser.parse_args()
 
@@ -59,6 +60,10 @@ target_sid_counter = 0
 walign_counter = 0
 
 for target_sentence in conll.sentences(target_file_handle, sentence_getter=conll.get_next_sentence):
+
+    if args.stop_after and int(args.stop_after) == target_sid_counter:
+        break
+
     # target sentence found in sentence alignment
     if target_sid_counter in sentence_alignments:
         source_sid, sal_confidence = sentence_alignments[target_sid_counter]
