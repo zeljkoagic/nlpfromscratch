@@ -7,6 +7,8 @@ from functools import partial
 import sys
 import time
 from pathlib import Path
+import numpy as np
+import mst.cle as cle
 
 start_time = time.time()  # timing the script
 
@@ -23,13 +25,14 @@ parser.add_argument('--trees', action='store_true', help="project dependency tre
 parser.add_argument('--binary', action='store_true', help="use binary alignments instead of alignment probabilities")
 parser.add_argument('--use_similarity', action='store_true', help="use word alignment-derived language similarity proxy")
 parser.add_argument("--stop_after", required=False, help="stop after n sentences")
+parser.add_argument("--temperature", required=False, help="softmax temperature", type=float, default=1.0)
 
 args = parser.parse_args()
 
-source_language_name = args.source.stem
+source_language_name = args.source.stem.split(".", 1)[0]
 
 # choose weight matrix normalizers
-normalizers = {"softmax": norm.softmax,
+normalizers = {"softmax": partial(norm.softmax, temperature=args.temperature),
                "rank": partial(norm.rank, use_integers=False),
                "intrank": partial(norm.rank, use_integers=True),
                "stdev": norm.stdev_norm,
@@ -104,16 +107,23 @@ for target_sentence in conll.sentences(target_file_handle, sentence_getter=conll
     m = len(source_sentence)
     n = len(target_sentence)
 
-    print(S)
     A = align.get_alignment_matrix((m + 1, n + 1), walign_pairs, walign_probs, args.binary)
     T = align.project_dependencies_to_target(S, A)
 
     # normalize the target matrix
     T = normalize_after_projection(T)
 
-    # apply the pair similarity factor TODO: Should we think about when we apply the similarity?
+    # np.set_printoptions(linewidth=np.nan)
+    # print(S)
+    # print(A)
+    # print(T)
+    # print(cle.mdst(S[1:,:]) == [token.head for token in source_sentence])
+
+    # TODO Do we need to verify whether this is a good proxy for language similarity?
+    # TODO: Should we think about when we apply the language pair similarity?
+    # apply the pair similarity factor
     if args.use_similarity:
-        T *= similarity  # TODO Do we need to verify whether this is a good proxy for language similarity?
+        T *= similarity
 
     # print the results
     for token in target_sentence:
@@ -122,8 +132,8 @@ for target_sentence in conll.sentences(target_file_handle, sentence_getter=conll
         projected_labels = L.get(token.idx) if token.idx in L else Counter({"_": 0})
 
         print("%s\t%s\t%s\t%s" % (source_language_name, " ".join(["{}:{}".format(t[0], t[1]) for t in projected_tags.most_common()]),
-                              " ".join(["{}:{}".format(l[0], l[1]) for l in projected_labels.most_common()]),
-                              " ".join(map(str, T[token.idx]))))
+                                  " ".join(["{}:{}".format(l[0], l[1]) for l in projected_labels.most_common()]),
+                                  " ".join(map(str, T[token.idx]))))
     print()
 
 print("Execution time: %s sec" % (time.time() - start_time), file=sys.stderr)
