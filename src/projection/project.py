@@ -104,6 +104,7 @@ for target_sentence in conll.sentences(target_file_handle, sentence_getter=conll
     m = len(source_sentence)
     n = len(target_sentence)
 
+    print(S)
     A = align.get_alignment_matrix((m + 1, n + 1), walign_pairs, walign_probs, args.binary)
     T = align.project_dependencies_to_target(S, A)
 
