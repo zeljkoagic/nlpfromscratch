@@ -107,10 +107,10 @@ def get_next_sentence_and_graph(conll_file_handle):
 
     it = 0
     for part in graph_parts:
-        it += 1
         for item in part:
             head, confidence = item.split(":")
             next_graph[it][int(head)] = float(confidence)
+        it += 1
 
     return next_sentence, next_graph, parts_of_speech, dependency_labels
 
