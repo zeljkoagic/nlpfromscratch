@@ -73,7 +73,8 @@ def get_alignment_matrix(shape, pairs, probabilities, binary=False):
         matrix[int(source_id)+1][int(target_id)+1] = float(probability)
 
     matrix[0, 0] = 1.0  # source root always aligns to target root
-    return np.where(matrix == 0, [0.5], matrix)
+    #return np.where(matrix == 0, [0.5], matrix)
+    return matrix
 
 
 def project_dependencies_to_target(S, A):  # TODO Must be softmaxed!
