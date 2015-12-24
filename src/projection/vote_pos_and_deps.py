@@ -8,53 +8,51 @@ import sys
 import time
 import copy
 from pathlib import Path
+import utils.score as score
+
+
+def vote_weight_matrix(sentence_tensor):
+    """
+    TODO
+    :param sentence_tensor:
+    :return:
+    """
+    return sentence_tensor.sum(axis=2)
 
 start_time = time.time()  # timing the script
 
-parser = argparse.ArgumentParser(description="Votes.")
+parser = argparse.ArgumentParser(description="Voting and CLE decoding on projected labels and weight matrices.")
 
 parser.add_argument("--target", required=True, help="target CoNLL file", type=Path)
-parser.add_argument("--votes", required=True, help="file with all votes merged")
+parser.add_argument("--votes", required=True, help="file with all votes merged", type=Path)
 parser.add_argument("--stop_after", required=False, help="stop after n sentences")
 parser.add_argument('--inner_vote_pos', action='store_true', help="intra-language POS tag voting")
 parser.add_argument('--inner_vote_labels', action='store_true', help="intra-language dependency label voting")
 parser.add_argument('--pretagged', action='store_true', help="use preassigned target POS tags instead of voted tags")
+parser.add_argument('--dump_npz', action='store_true', help="dump NPZ debug files")
+parser.add_argument('--skip_untagged', action='store_true', help="skip sentences with untagged tokens")
 
 args = parser.parse_args()
+
 target_file_handle = args.target.open()
-
-
-def update_scores(gold_token, system_token):
-    update = np.array([0.0, 0.0, 0.0, 0.0])
-    if system_token.cpos == gold_token.cpos:
-        update[0] = 1.0
-    if system_token.head == gold_token.head and system_token.deprel == gold_token.deprel:
-        update[1] = 1.0
-    if system_token.head == gold_token.head:
-        update[2] = 1.0
-    if system_token.deprel == gold_token.deprel:
-        update[3] = 1.0
-    return update
 
 token_count = 0
 sentence_count = 0
-scores = np.array([0.0, 0.0, 0.0, 0.0])  # POS, LAS, UAS, LA
+scorer = score.TokenScorer()  # for scoring
 
+# current sentence information: tags, dependency labels, tensor, and source languages list
 current_pos_tags = []
 current_dep_labels = []
-skip_sentence = False  # skip sentences with empty sources
 current_sentence_tensor = []
 current_sentence_source_languages = []
 
-def vote_weight_matrix(T_current_sentence):
-    return T_current_sentence.sum(axis=2)
+skip_sentence = False  # skip sentences with empty sources
 
-
-for line in open(args.votes):
+for line in args.votes.open():
     line = line.strip()
 
     if line and not skip_sentence:
-        current_sentence_source_languages.clear()
+        current_sentence_source_languages.clear()  # TODO: This is redundant! Should be ordered set.
 
         # voting for tags, dependency labels and heads
         overall_pos_votes = Counter()
@@ -107,21 +105,20 @@ for line in open(args.votes):
                     projection_weights_per_token.append([])
                 projection_weights_per_token[i].append(val)
 
-        if not len(projection_weights_per_token):
+        if not len(projection_weights_per_token):  # if none of the source languages contributed any projections
             skip_sentence = True
             continue
 
         current_pos_tags.append(overall_pos_votes.most_common(1)[0][0])
         current_dep_labels.append(overall_label_votes.most_common(1)[0][0])
-        # current_sentence_matrix.append(overall_head_votes)
 
-        # skip sentences with at least one placeholder "_" POS tag or dependency label
-        if current_pos_tags[-1] == "_":  # or current_dep_labels[-1] == "_": TODO everything gets skipped if dep=="_"!
+        # skip sentences with at least one placeholder "_" POS tag (or dependency label?)
+        if args.skip_untagged and current_pos_tags[-1] == "_":  # or current_dep_labels[-1] == "_": TODO everything gets skipped if dep=="_"!
             skip_sentence = True
 
     elif not line:
 
-        current_sentence = conll.get_next_sentence(target_file_handle)  # has to be run even if skip_sentence is True!
+        current_sentence = conll.get_next_sentence(target_file_handle)  # has to be run even if skip_sentence == True!
 
         if not skip_sentence:
 
@@ -129,18 +126,20 @@ for line in open(args.votes):
 
             # construct a 3-dim tensor where each slice along the third dimension corresponds
             # to a weight matrix for a given source language
-            T_current_sentence = np.array(current_sentence_tensor)
+            current_sentence_tensor = np.array(current_sentence_tensor)
+
             # unify the source language matrices into a single a matrix
-            M_current_sentence = vote_weight_matrix(T_current_sentence)
+            current_sentence_matrix = vote_weight_matrix(current_sentence_tensor)
 
-            # Dump the raw projections into a file, for debug purposes
-            raw_projections_filename = "{}.{}".format(args.target.name.split('.', 1)[0], sentence_count)
-            np.savez(raw_projections_filename,
-                     projection_tensor=T_current_sentence,
-                     source_languages=current_sentence_source_languages,
-                     heads=[token.head for token in current_sentence])
+            # dump the raw projections into a file, for debug purposes
+            if args.dump_npz:
+                raw_projections_filename = "{}.{}".format(args.target.name.split('.', 1)[0], sentence_count)
+                np.savez(raw_projections_filename,
+                         projection_tensor=current_sentence_tensor,
+                         source_languages=current_sentence_source_languages,
+                         heads=[token.head for token in current_sentence])
 
-            decoded_heads = cle.mdst(M_current_sentence)  # do the MST magic
+            decoded_heads = cle.mdst(current_sentence_matrix)  # do the MST magic
 
             jt = 0
             for token in current_sentence:
@@ -151,21 +150,19 @@ for line in open(args.votes):
                 # token.head = np.argmax(current_sentence_matrix[jt, ])  # placeholder, per-token voting
 
                 # get the voted POS tag and dependency label
+                token.deprel = current_dep_labels[jt]
                 if not args.pretagged:
                     token.cpos = "PUNCT" if token.form in string.punctuation else current_pos_tags[jt]
 
-                token.deprel = current_dep_labels[jt]
-
                 # evaluation TODO Makes sense only if the target language is one of the source languages
-                token_count += 1
-                scores += update_scores(old_token, token)
+                scorer.update(old_token, token)
 
                 # print(token, " ".join(map(str, current_sentence_matrix[jt, ])))
                 print(token)  # we don't need the weights anymore
                 jt += 1
             print()
 
-        skip_sentence = False
+        skip_sentence = False  # we don't yet know whether to skip the next one or not, so reset the flag
         current_sentence_tensor = []
         current_pos_tags = []
         current_dep_labels = []
@@ -173,5 +170,5 @@ for line in open(args.votes):
         if args.stop_after and int(args.stop_after) == sentence_count:
             break
 
-scores = (scores / token_count) * 100
-print(" ".join(map(str, scores)), time.time() - start_time, file=sys.stderr)
+print("Scores:", " ".join(map(str, scorer.get_score_list())), file=sys.stderr)
+print("Execution time: %s sec" % (time.time() - start_time), file=sys.stderr)
