@@ -6,7 +6,7 @@ HOME=/home/zagic/nlpfromscratch
 > $HOME/run/commands_project_bible.txt
 
 # for target in `cat $HOME/data/lists/sources.txt`; do
-for target in en; do
+for target in `cat $HOME/data/lists/sources.txt`; do
     for source in `cat $HOME/data/lists/sources.txt`; do
         for corpus in bible; do
             for algorithm in crf_sgd svm_mira; do
