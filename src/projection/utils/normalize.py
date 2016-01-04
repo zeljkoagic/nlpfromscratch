@@ -5,7 +5,7 @@ import numpy as np
 def softmax(sentence_matrix, temperature=1.0):
     """Softmax normalization.
 
-    :param sentence_matrix: (n x n+1) weight matrix from the parser
+    :param sentence_matrix: (n+1 x n+1) weight matrix from the parser
     :param temperature: softmax temperature
     :return: softmaxed weight matrix
     """
@@ -16,7 +16,7 @@ def softmax(sentence_matrix, temperature=1.0):
 def rank(sentence_matrix, use_integers=False):
     """
     TODO
-    :param sentence_matrix: (n x n+1) weight matrix from the parser
+    :param sentence_matrix: (n+1 x n+1) weight matrix from the parser
     :return: ranked weight matrix
     """
     ranked = np.zeros_like(sentence_matrix)
@@ -47,7 +47,7 @@ def stdev_norm(sentence_matrix):
         stdev = np.std(sentence_matrix[it, ])
         mean = np.mean(sentence_matrix[it, ])
         for jt in range(normalized.shape[1]):
-            normalized[it, jt] = clip(0.5 + sentence_matrix[it, jt] - float(mean) / float(2 * stdev + 0.0000001))
+            normalized[it, jt] = clip((0.5 + sentence_matrix[it, jt] - float(mean)) / float(stdev))
 
     return normalized
 

@@ -27,6 +27,9 @@ parser.add_argument('--use_similarity', action='store_true', help="use word alig
 parser.add_argument("--stop_after", required=False, help="stop after n sentences")
 parser.add_argument("--temperature", required=False, help="softmax temperature", type=float, default=1.0)
 
+total = 0
+total_correct = 0
+
 args = parser.parse_args()
 
 source_language_name = args.source.stem.split(".", 1)[0]
@@ -118,6 +121,11 @@ for target_sentence in conll.sentences(target_file_handle, sentence_getter=conll
     # print(A)
     # print(T)
     # print(cle.mdst(S[1:,:]) == [token.head for token in source_sentence])
+    pred_heads = cle.mdst(S[1:,:])
+    gold_heads = [token.head for token in source_sentence]
+
+    total_correct += sum(pred == gold for pred, gold in zip(pred_heads, gold_heads))
+    total += len(gold_heads)
 
     # TODO Do we need to verify whether this is a good proxy for language similarity?
     # TODO: Should we think about when we apply the language pair similarity?
@@ -138,3 +146,4 @@ for target_sentence in conll.sentences(target_file_handle, sentence_getter=conll
     print()
 
 print("Execution time: %s sec" % (time.time() - start_time), file=sys.stderr)
+print("Score: ", total_correct / total, file=sys.stderr)
