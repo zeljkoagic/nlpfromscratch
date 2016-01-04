@@ -36,7 +36,9 @@ parser.add_argument("--stop_after", required=False, help="stop after n sentences
 parser.add_argument("--temperature", required=False, help="softmax temperature", type=float, default=1.0)
 
 total = 0
+total_sent = 0
 total_correct = 0
+total_correct_sent = 0
 
 args = parser.parse_args()
 
@@ -138,6 +140,9 @@ for target_sentence in conll.sentences(target_file_handle, sentence_getter=conll
     if len(wrong_indices):
         print(wrong_indices, gold_heads[wrong_indices], pred_heads[wrong_indices], file=sys.stderr)
     #    print(gold_heads, pred_heads, file=sys.stderr)
+    else:
+        total_correct_sent += 1
+    total_sent += 1
 
 
     # TODO Do we need to verify whether this is a good proxy for language similarity?
@@ -160,4 +165,4 @@ for target_sentence in conll.sentences(target_file_handle, sentence_getter=conll
     print()
 
 print("Execution time: %s sec" % (time.time() - start_time), file=sys.stderr)
-print("Score: ", total_correct / total, file=sys.stderr)
+print("Score: ", total_correct / total, total_correct_sent / total_sent, file=sys.stderr)
