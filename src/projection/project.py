@@ -123,7 +123,7 @@ for target_sentence in conll.sentences(target_file_handle, sentence_getter=conll
     T = normalize_after_projection(T)
 
     np.set_printoptions(linewidth=np.nan)
-    print(S)
+    print(S, file=sys.stderr)
     # print(A)
     # print(T)
     # print(cle.mdst(S[1:,:]) == [token.head for token in source_sentence])
