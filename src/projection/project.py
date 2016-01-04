@@ -12,14 +12,22 @@ import mst.cle as cle
 
 start_time = time.time()  # timing the script
 
+# choose weight matrix normalizers
+normalizers = {"softmax": None,
+               "rank": partial(norm.rank, use_integers=False),
+               "intrank": partial(norm.rank, use_integers=True),
+               "stdev": norm.stdev_norm,
+               "identity": lambda x: x,
+               "standardize": norm.standardize}
+
 parser = argparse.ArgumentParser(description="Projects dependency trees from source to target via word alignments.")
 
 parser.add_argument("--source", required=True, help="source CoNLL file", type=Path)
 parser.add_argument("--target", required=True, help="target CoNLL file")
 parser.add_argument("--word_alignment", required=True, help="word alignments file")
 parser.add_argument("--sentence_alignment", required=True, help="sentence alignments file")
-parser.add_argument("--norm_before", required=True, choices=["softmax", "rank", "intrank", "stdev", "identity"], help="normalization before projection")
-parser.add_argument("--norm_after", required=True, choices=["softmax", "rank", "intrank", "stdev", "identity"], help="normalization after projection")
+parser.add_argument("--norm_before", required=True, choices=normalizers.keys(), help="normalization before projection")
+parser.add_argument("--norm_after", required=True, choices=normalizers.keys(), help="normalization after projection")
 parser.add_argument('--with_pp', action='store_true', help="project POS with alignment probabilities instead unit votes")
 parser.add_argument('--trees', action='store_true', help="project dependency trees instead of weight matrices")
 parser.add_argument('--binary', action='store_true', help="use binary alignments instead of alignment probabilities")
@@ -32,14 +40,9 @@ total_correct = 0
 
 args = parser.parse_args()
 
-source_language_name = args.source.stem.split(".", 1)[0]
+normalizers['softmax'] = partial(norm.softmax, temperature=args.temperature)
 
-# choose weight matrix normalizers
-normalizers = {"softmax": partial(norm.softmax, temperature=args.temperature),
-               "rank": partial(norm.rank, use_integers=False),
-               "intrank": partial(norm.rank, use_integers=True),
-               "stdev": norm.stdev_norm,
-               "identity": lambda x: x}
+source_language_name = args.source.stem.split(".", 1)[0]
 
 normalize_before_projection = normalizers[args.norm_before]
 normalize_after_projection = normalizers[args.norm_after]
