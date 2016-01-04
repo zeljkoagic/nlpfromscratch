@@ -122,8 +122,8 @@ for target_sentence in conll.sentences(target_file_handle, sentence_getter=conll
     # normalize the target matrix
     T = normalize_after_projection(T)
 
-    # np.set_printoptions(linewidth=np.nan)
-    # print(S)
+    np.set_printoptions(linewidth=np.nan)
+    print(S)
     # print(A)
     # print(T)
     # print(cle.mdst(S[1:,:]) == [token.head for token in source_sentence])
