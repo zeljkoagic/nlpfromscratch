@@ -133,7 +133,7 @@ for target_sentence in conll.sentences(target_file_handle, sentence_getter=conll
     # print(heads, tree_score)
 
 
-    pred_heads = cle.mdst(S[1:,:], greedy=False)
+    # pred_heads = cle.mdst(S[1:,:], greedy=False)
     gold_heads = [token.head for token in source_sentence]
     assert len(pred_heads) == len(gold_heads)
 
