@@ -126,6 +126,7 @@ for target_sentence in conll.sentences(target_file_handle, sentence_getter=conll
     # print(cle.mdst(S[1:,:]) == [token.head for token in source_sentence])
     pred_heads = cle.mdst(S[1:,:])
     gold_heads = [token.head for token in source_sentence]
+    assert len(pred_heads) == len(gold_heads)
 
     total_correct += sum(pred == gold for pred, gold in zip(pred_heads, gold_heads))
     total += len(gold_heads)
