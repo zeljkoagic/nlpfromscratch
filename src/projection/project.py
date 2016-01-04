@@ -131,6 +131,12 @@ for target_sentence in conll.sentences(target_file_handle, sentence_getter=conll
     total_correct += sum(pred == gold for pred, gold in zip(pred_heads, gold_heads))
     total += len(gold_heads)
 
+    pred_heads = np.array(pred_heads)
+    gold_heads = np.array(gold_heads)
+    wrong_indices = np.where(~(pred_heads == gold_heads))[0]
+    print(wrong_indices, gold_heads[wrong_indices], pred_heads[wrong_indices], file=sys.stderr)
+
+
     # TODO Do we need to verify whether this is a good proxy for language similarity?
     # TODO: Should we think about when we apply the language pair similarity?
     # apply the pair similarity factor
