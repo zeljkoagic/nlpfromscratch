@@ -9,6 +9,7 @@ import time
 from pathlib import Path
 import numpy as np
 import mst.cle as cle
+from dependency_decoding import chu_liu_edmonds
 
 start_time = time.time()  # timing the script
 
@@ -126,7 +127,13 @@ for target_sentence in conll.sentences(target_file_handle, sentence_getter=conll
     # print(A)
     # print(T)
     # print(cle.mdst(S[1:,:]) == [token.head for token in source_sentence])
-    pred_heads = cle.mdst(S[1:,:], greedy=False)
+
+    pred_heads, tree_score = chu_liu_edmonds(S)
+    pred_heads = pred_heads[1:]
+    # print(heads, tree_score)
+
+
+    # pred_heads = cle.mdst(S[1:,:], greedy=False)
     gold_heads = [token.head for token in source_sentence]
     assert len(pred_heads) == len(gold_heads)
 
