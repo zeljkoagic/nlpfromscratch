@@ -77,9 +77,9 @@ for target_sentence in conll.sentences(target_file_handle, sentence_getter=conll
     if target_sid_counter in sentence_alignments:
         source_sid, sal_confidence = sentence_alignments[target_sid_counter]
     else:
-        #for _ in target_sentence:  # if not found, just print out dummy to maintain the number of lines/sentences
-        #    print("_")
-        #print()
+        for _ in target_sentence:  # if not found, just print out dummy to maintain the number of lines/sentences
+            print("_")
+        print()
         target_sid_counter += 1
         continue
 
@@ -135,8 +135,8 @@ for target_sentence in conll.sentences(target_file_handle, sentence_getter=conll
     gold_heads = np.array(gold_heads)
     wrong_indices = np.where(~(pred_heads == gold_heads))[0]
 
-    #if len(wrong_indices):
-    #    print(wrong_indices, gold_heads[wrong_indices], pred_heads[wrong_indices], file=sys.stderr)
+    if len(wrong_indices):
+        print(wrong_indices, gold_heads[wrong_indices], pred_heads[wrong_indices], file=sys.stderr)
     #    print(gold_heads, pred_heads, file=sys.stderr)
 
 
@@ -152,13 +152,11 @@ for target_sentence in conll.sentences(target_file_handle, sentence_getter=conll
         projected_tags = P.get(token.idx) if token.idx in P else Counter({"_": 0})
         projected_labels = L.get(token.idx) if token.idx in L else Counter({"_": 0})
 
-        #print("%s\t%s\t%s\t%s" % (source_language_name,
-        #                          " ".join(["{}:{}".format(t[0], t[1]) for t in projected_tags.most_common()]),
-        #                          " ".join(["{}:{}".format(l[0], l[1]) for l in projected_labels.most_common()]),
-        #                          " ".join(map(str, T[token.idx]))))
-
-        print(token, " ".join(map(str, T[token.idx])))
-
+        print("%s\t%s\t%s\t%s" % (source_language_name,
+                                  " ".join(["{}:{}".format(t[0], t[1]) for t in projected_tags.most_common()]),
+                                  " ".join(["{}:{}".format(l[0], l[1]) for l in projected_labels.most_common()]),
+                                  " ".join(map(str, T[token.idx]))))
+        # print(token, " ".join(map(str, T[token.idx])))
     print()
 
 print("Execution time: %s sec" % (time.time() - start_time), file=sys.stderr)
