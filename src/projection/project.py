@@ -77,9 +77,9 @@ for target_sentence in conll.sentences(target_file_handle, sentence_getter=conll
     if target_sid_counter in sentence_alignments:
         source_sid, sal_confidence = sentence_alignments[target_sid_counter]
     else:
-        for _ in target_sentence:  # if not found, just print out dummy to maintain the number of lines/sentences
-            print("_")
-        print()
+        #for _ in target_sentence:  # if not found, just print out dummy to maintain the number of lines/sentences
+        #    print("_")
+        #print()
         target_sid_counter += 1
         continue
 
