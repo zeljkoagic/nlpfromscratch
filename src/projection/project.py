@@ -128,7 +128,7 @@ for target_sentence in conll.sentences(target_file_handle, sentence_getter=conll
     # print(T)
     # print(cle.mdst(S[1:,:]) == [token.head for token in source_sentence])
 
-    pred_heads, tree_score = chu_liu_edmonds(S)
+    pred_heads, tree_score = chu_liu_edmonds(S, tol=0.00000000001)
     pred_heads = pred_heads[1:]
     # print(heads, tree_score)
 
