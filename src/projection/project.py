@@ -134,7 +134,10 @@ for target_sentence in conll.sentences(target_file_handle, sentence_getter=conll
     pred_heads = np.array(pred_heads)
     gold_heads = np.array(gold_heads)
     wrong_indices = np.where(~(pred_heads == gold_heads))[0]
-    print(wrong_indices, gold_heads[wrong_indices], pred_heads[wrong_indices], file=sys.stderr)
+
+    if len(wrong_indices):
+        print(wrong_indices, gold_heads[wrong_indices], pred_heads[wrong_indices], file=sys.stderr)
+        print(gold_heads, pred_heads, file=sys.stderr)
 
 
     # TODO Do we need to verify whether this is a good proxy for language similarity?
