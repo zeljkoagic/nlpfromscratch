@@ -106,6 +106,7 @@ for target_sentence in conll.sentences(target_file_handle, sentence_getter=conll
     np.set_printoptions(linewidth=np.nan)
 
     # source matrix normalization
+    print(S)
     S = normalize_before_projection(S)
     print(S)
 
