@@ -53,8 +53,8 @@ normalize_before_projection = normalizers[args.norm_before]
 normalize_after_projection = normalizers[args.norm_after]
 
 # source sentence getter is determined by args.trees
-source_data_getters = {True: conll.get_next_sentence_and_tree,
-                       False: conll.get_next_sentence_and_graph}
+source_data_getters = {0: conll.get_next_sentence_and_graph,
+                       1: conll.get_next_sentence_and_tree}
 
 get_source_data = source_data_getters[args.trees]
 
