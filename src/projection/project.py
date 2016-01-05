@@ -36,10 +36,10 @@ parser.add_argument('--use_similarity', action='store_true', help="use word alig
 parser.add_argument("--stop_after", required=False, help="stop after n sentences")
 parser.add_argument("--temperature", required=False, help="softmax temperature", type=float, default=1.0)
 
-total = 0
-total_sent = 0
-total_correct = 0
-total_correct_sent = 0
+##total = 0
+#total_sent = 0
+#total_correct = 0
+#total_correct_sent = 0
 
 args = parser.parse_args()
 
@@ -101,6 +101,8 @@ for target_sentence in conll.sentences(target_file_handle, sentence_getter=conll
     source_sid_counter += 1
     target_sid_counter += 1
 
+    np.set_printoptions(linewidth=np.nan)
+
     # source matrix normalization
     S = normalize_before_projection(S)
 
@@ -122,35 +124,36 @@ for target_sentence in conll.sentences(target_file_handle, sentence_getter=conll
     # normalize the target matrix
     T = normalize_after_projection(T)
 
-    np.set_printoptions(linewidth=np.nan)
-    print(S, file=sys.stderr)
+
+
+    #print(S, file=sys.stderr)
     # print(A)
     # print(T)
     # print(cle.mdst(S[1:,:]) == [token.head for token in source_sentence])
 
-    pred_heads, tree_score = chu_liu_edmonds(S, tol=0)
-    pred_heads = pred_heads[1:]
+    #pred_heads, tree_score = chu_liu_edmonds(S)
+    #pred_heads = pred_heads[1:]
     # print(heads, tree_score)
 
 
     # pred_heads = cle.mdst(S[1:,:], greedy=False)
-    gold_heads = [token.head for token in source_sentence]
-    assert len(pred_heads) == len(gold_heads)
+    #gold_heads = [token.head for token in source_sentence]
+    #assert len(pred_heads) == len(gold_heads)
 
-    total_correct += sum(pred == gold for pred, gold in zip(pred_heads, gold_heads))
-    total += len(gold_heads)
+    #total_correct += sum(pred == gold for pred, gold in zip(pred_heads, gold_heads))
+    #total += len(gold_heads)
 
-    pred_heads = np.array(pred_heads)
-    gold_heads = np.array(gold_heads)
-    wrong_indices = np.where(~(pred_heads == gold_heads))[0]
+    #pred_heads = np.array(pred_heads)
+    #gold_heads = np.array(gold_heads)
+    #wrong_indices = np.where(~(pred_heads == gold_heads))[0]
 
-    if len(wrong_indices):
+    #if len(wrong_indices):
         # print(wrong_indices, gold_heads[wrong_indices], pred_heads[wrong_indices], file=sys.stderr)
         # print(gold_heads, pred_heads, file=sys.stderr)
-        pass
-    else:
-        total_correct_sent += 1
-    total_sent += 1
+    #    pass
+    #else:
+    #    total_correct_sent += 1
+    #total_sent += 1
 
     # TODO Do we need to verify whether this is a good proxy for language similarity?
     # TODO: Should we think about when we apply the language pair similarity?
@@ -172,4 +175,4 @@ for target_sentence in conll.sentences(target_file_handle, sentence_getter=conll
     print()
 
 print("Execution time: %s sec" % (time.time() - start_time), file=sys.stderr)
-print("Score: ", total_correct / total, total_correct_sent / total_sent, file=sys.stderr)
+#print("Score: ", total_correct / total, total_correct_sent / total_sent, file=sys.stderr)

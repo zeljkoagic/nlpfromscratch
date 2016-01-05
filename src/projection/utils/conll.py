@@ -103,7 +103,7 @@ def get_next_sentence_and_graph(conll_file_handle):
 
     # the graph has to be stored after loading the sentence
     # as we don't know the sentence length before
-    next_graph = np.zeros((len(next_sentence) + 1, len(next_sentence) + 1))
+    next_graph = np.ones((len(next_sentence) + 1, len(next_sentence) + 1)) * np.nan
 
     it = 0
     for part in graph_parts:
@@ -137,7 +137,7 @@ def get_next_sentence_and_tree(conll_file_handle):
         line = conll_file_handle.readline().strip().split()
 
     # create graph (n+1 x n+1)
-    next_graph = np.zeros((len(next_sentence) + 1, len(next_sentence) + 1))
+    next_graph = np.ones((len(next_sentence) + 1, len(next_sentence) + 1)) * np.nan
 
     # assign the collected heads to the graph
     it = 0

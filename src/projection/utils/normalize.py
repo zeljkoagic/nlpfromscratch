@@ -10,7 +10,7 @@ def softmax(sentence_matrix, temperature=1.0):
     :return: softmaxed weight matrix
     """
     m_exp = np.exp(sentence_matrix/temperature)
-    return (m_exp.T / m_exp.sum(axis=1)).T
+    return (m_exp.T / np.nansum(m_exp, axis=1)).T
 
 
 def rank(sentence_matrix, use_integers=False):
@@ -19,7 +19,7 @@ def rank(sentence_matrix, use_integers=False):
     :param sentence_matrix: (n+1 x n+1) weight matrix from the parser
     :return: ranked weight matrix
     """
-    ranked = np.zeros_like(sentence_matrix)
+    ranked = np.ones_like(sentence_matrix) * np.nan
 
     # create rankings
     if use_integers:
@@ -28,9 +28,18 @@ def rank(sentence_matrix, use_integers=False):
         ranks = [(x+1)/ranked.shape[1] for x in range(ranked.shape[1])]
 
     for it in range(ranked.shape[0]):
+
+
         mappings = dict(zip(sorted(sentence_matrix[it, ]), ranks))
+        #mappings[np.nan] = np.nan
         for jt in range(ranked.shape[1]):
-            ranked[it, jt] = mappings[sentence_matrix[it, jt]]
+            if np.isnan(sentence_matrix[it, jt]):
+                ranked[it, jt] = np.nan
+            else:
+                ranked[it, jt] = mappings[sentence_matrix[it, jt]]
+
+    if not use_integers:
+        return (ranked.T / np.nansum(ranked, axis=1)).T
 
     return ranked
 
@@ -54,8 +63,8 @@ def stdev_norm(sentence_matrix):
 
 def standardize(sentence_matrix):
     normalized = sentence_matrix.copy()
-    #normalized -= normalized.mean()
-    normalized /= normalized.std()
+    normalized -= np.nanmean(normalized)
+    normalized /= np.nanstd(normalized)
 
     return normalized
 

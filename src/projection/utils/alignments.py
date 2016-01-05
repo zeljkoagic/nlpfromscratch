@@ -62,7 +62,7 @@ def get_alignment_matrix(shape, pairs, probabilities, binary=False):
     if len(pairs) != len(probabilities):
         raise Exception("Mismatch in sizes of pairs (%s) and probabilities (%s)" % (len(pairs), len(probabilities)))
 
-    matrix = np.zeros(shape)  # change here for non-zero default
+    matrix = np.ones(shape) * np.nan  # change here for non-zero default
 
     if binary:
         probabilities = np.ones_like(probabilities)
@@ -86,8 +86,8 @@ def project_dependencies_to_target(S, A):  # TODO Matrix S must be normalized, i
     """
     m_plus_one, n_plus_one = A.shape
     
-    T = np.zeros(shape=(n_plus_one, n_plus_one))  # target graph
-    T_edge = np.zeros_like(T)
+    T = np.ones(shape=(n_plus_one, n_plus_one)) * np.nan  # target graph
+    T_edge = np.ones_like(T) * np.nan
 
     # for each dependent d in source graph (dependents are rows!)
     for d in range(m_plus_one):
@@ -96,7 +96,7 @@ def project_dependencies_to_target(S, A):  # TODO Matrix S must be normalized, i
                 np.dot(A[d].reshape(-1, 1), A[h].reshape(1, -1), out=T_edge)
                 T_edge *= S[d, h]  # multiply by confidence of edge h->d from the source parse
                 # T += T_edge
-                np.maximum(T, T_edge, out=T)
+                np.fmax(T, T_edge, out=T)
     return T
 
 
