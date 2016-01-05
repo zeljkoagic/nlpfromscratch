@@ -54,7 +54,7 @@ def stdev_norm(sentence_matrix):
 
 def standardize(sentence_matrix):
     normalized = sentence_matrix.copy()
-    normalized -= normalized.mean()
+    #normalized -= normalized.mean()
     normalized /= normalized.std()
 
     return normalized
