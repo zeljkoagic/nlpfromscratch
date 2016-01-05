@@ -49,8 +49,12 @@ normalizers['softmax'] = partial(norm.softmax, temperature=args.temperature)
 
 source_language_name = args.source.stem.split(".", 1)[0]
 
-normalize_before_projection = normalizers[args.norm_before]
-normalize_after_projection = normalizers[args.norm_after]
+if not args.trees:
+    normalize_before_projection = normalizers[args.norm_before]
+    normalize_after_projection = normalizers[args.norm_after]
+else:
+    normalize_before_projection = normalizers["identity"]
+    normalize_after_projection = normalizers["identity"]
 
 # source sentence getter is determined by args.trees
 source_data_getters = {0: conll.get_next_sentence_and_graph,
@@ -106,8 +110,7 @@ for target_sentence in conll.sentences(target_file_handle, sentence_getter=conll
     np.set_printoptions(linewidth=np.nan)
 
     # source matrix normalization
-    if not args.trees:
-        S = normalize_before_projection(S)
+    S = normalize_before_projection(S)
 
     # get word alignments for that sentence pair
     walign_pairs, walign_probs = word_alignments[walign_counter]
