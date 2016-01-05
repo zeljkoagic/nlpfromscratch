@@ -16,7 +16,7 @@ HOME=/home/zagic/nlpfromscratch
 # iterate through all language pairs
 for corpus in bible; do
     for l1 in `cat /home/bplank/preprocess-holy-data/languages/trg-src-${corpus}.txt`; do
-        for l1 in `cat /home/bplank/preprocess-holy-data/languages/trg-src-${corpus}.txt`; do
+        for l2 in `cat /home/bplank/preprocess-holy-data/languages/trg-src-${corpus}.txt`; do
             if [ "$l1" != "$l2" ]; then
                 # extract sentence pairs (does lowercasing too)
                 # currently supports only fast_align!
