@@ -31,6 +31,7 @@ parser.add_argument('--inner_vote_labels', action='store_true', help="intra-lang
 parser.add_argument('--pretagged', action='store_true', help="use preassigned target POS tags instead of voted tags")
 parser.add_argument('--dump_npz', action='store_true', help="dump NPZ debug files")
 parser.add_argument('--skip_untagged', action='store_true', help="skip sentences with untagged tokens")
+parser.add_argument('--decode', action='store_true', help="perform CLE decoding")
 
 args = parser.parse_args()
 
@@ -140,7 +141,10 @@ for line in args.votes.open():
                          heads=[token.head for token in current_sentence],
                          tokens=[token.form for token in current_sentence])
 
-            decoded_heads = cle.mdst(current_sentence_matrix)  # do the MST magic
+            if args.decode:
+                decoded_heads = cle.mdst(current_sentence_matrix)  # do the MST magic TODO Change to new CLE!!!
+            else:
+                decoded_heads = [0 for _ in current_sentence]
 
             jt = 0
             for token in current_sentence:
