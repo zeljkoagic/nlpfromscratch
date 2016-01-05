@@ -106,9 +106,8 @@ for target_sentence in conll.sentences(target_file_handle, sentence_getter=conll
     np.set_printoptions(linewidth=np.nan)
 
     # source matrix normalization
-    print(S)
-    S = normalize_before_projection(S)
-    print(S)
+    if not args.trees:
+        S = normalize_before_projection(S)
 
     # get word alignments for that sentence pair
     walign_pairs, walign_probs = word_alignments[walign_counter]
