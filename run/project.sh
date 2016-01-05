@@ -11,7 +11,7 @@ for target in en; do
         for corpus in bible; do
             for algorithm in svm_mira; do
                 if [ "$source" != "$target" ]; then
-                    echo "python $HOME/src/projection/project.py --source /home/bplank/multilingparse/data/unlab/tinytok/bible2project/${source}.2proj.conll --target /home/bplank/multilingparse/data/unlab/tinytok/bible2project/${target}.2proj.conll --word_alignment /home/bplank/preprocess-holy-data/data/walign/${source}-${target}.$corpus.wal --sentence_alignment /home/bplank/preprocess-holy-data/data/salign/${source}-${target}.$corpus.sal --norm_before standardize --norm_after identity 1> $HOME/data/projections/${source}-${target}.$corpus.$algorithm.proj 2> $HOME/data/logs/${source}-${target}.$corpus.$algorithm.proj.log" >> $HOME/run/commands_project_bible.txt
+                    echo "python $HOME/src/projection/project.py --source /home/bplank/multilingparse/data/unlab/tinytok/bible2project/${source}.2proj.conll --target /home/bplank/multilingparse/data/unlab/tinytok/bible2project/${target}.2proj.conll --word_alignment /home/bplank/preprocess-holy-data/data/walign/${source}-${target}.$corpus.wal.fixed --sentence_alignment /home/bplank/preprocess-holy-data/data/salign/${source}-${target}.$corpus.sal --norm_before standardize --norm_after identity 1> $HOME/data/projections/${source}-${target}.$corpus.$algorithm.proj 2> $HOME/data/logs/${source}-${target}.$corpus.$algorithm.proj.log" >> $HOME/run/commands_project_bible.txt
                 fi
             done
         done
