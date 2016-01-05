@@ -29,9 +29,9 @@ parser.add_argument("--word_alignment", required=True, help="word alignments fil
 parser.add_argument("--sentence_alignment", required=True, help="sentence alignments file")
 parser.add_argument("--norm_before", required=True, choices=normalizers.keys(), help="normalization before projection")
 parser.add_argument("--norm_after", required=True, choices=normalizers.keys(), help="normalization after projection")
-parser.add_argument('--with_pp', action='store_true', help="project POS with alignment probabilities instead unit votes")
-parser.add_argument('--trees', action='store_true', help="project dependency trees instead of weight matrices")
-parser.add_argument('--binary', action='store_true', help="use binary alignments instead of alignment probabilities")
+parser.add_argument('--with_pp', required=True, choices=[0, 1], help="project POS with alignment probabilities instead unit votes")
+parser.add_argument('--trees', required=True, choices=[0, 1], help="project dependency trees instead of weight matrices")
+parser.add_argument('--binary', required=True, choices=[0, 1], help="use binary alignments instead of alignment probabilities")
 parser.add_argument('--use_similarity', action='store_true', help="use word alignment-derived language similarity proxy")
 parser.add_argument("--stop_after", required=False, help="stop after n sentences")
 parser.add_argument("--temperature", required=False, help="softmax temperature", type=float, default=1.0)
@@ -51,8 +51,8 @@ normalize_before_projection = normalizers[args.norm_before]
 normalize_after_projection = normalizers[args.norm_after]
 
 # source sentence getter is determined by args.trees
-source_data_getters = {True: conll.get_next_sentence_and_tree,
-                       False: conll.get_next_sentence_and_graph}
+source_data_getters = {0: conll.get_next_sentence_and_tree,
+                       1: conll.get_next_sentence_and_graph}
 
 get_source_data = source_data_getters[args.trees]
 
