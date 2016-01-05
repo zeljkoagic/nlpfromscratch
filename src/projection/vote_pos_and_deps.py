@@ -137,7 +137,8 @@ for line in args.votes.open():
                 np.savez(raw_projections_filename,
                          projection_tensor=current_sentence_tensor,
                          source_languages=current_sentence_source_languages,
-                         heads=[token.head for token in current_sentence])
+                         heads=[token.head for token in current_sentence],
+                         tokens=[token.form for token in current_sentence])
 
             decoded_heads = cle.mdst(current_sentence_matrix)  # do the MST magic
 
