@@ -7,7 +7,7 @@ HOME=/home/zagic/nlpfromscratch
 for corpus in bible; do
     > $HOME/run/commands_project_${corpus}.txt
     for target in `cat /home/bplank/preprocess-holy-data/languages/trg-src-${corpus}.txt`; do
-        for source in `cat /home/bplank/preprocess-holy-data/languages/trg-src-${corpus}.txt`; do
+        for source in `cat /home/bplank/preprocess-holy-data/languages/src-train-languages.txt`; do
             for parser in svm_mira; do
                 for trees in 0 1; do
                     for binary in 0 1; do
