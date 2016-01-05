@@ -107,6 +107,7 @@ for target_sentence in conll.sentences(target_file_handle, sentence_getter=conll
 
     # source matrix normalization
     S = normalize_before_projection(S)
+    print(S)
 
     # get word alignments for that sentence pair
     walign_pairs, walign_probs = word_alignments[walign_counter]
