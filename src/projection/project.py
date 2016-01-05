@@ -43,6 +43,8 @@ parser.add_argument("--temperature", required=False, help="softmax temperature",
 
 args = parser.parse_args()
 
+print(args.with_pp, args.trees, args.binary)
+
 normalizers['softmax'] = partial(norm.softmax, temperature=args.temperature)
 
 source_language_name = args.source.stem.split(".", 1)[0]
