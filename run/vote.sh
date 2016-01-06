@@ -17,7 +17,8 @@ for corpus in bible; do
                         "--projections $HOME/data/projections/*-${target}.$corpus.$parser.trees_${trees}.binary_${binary}.with_pp_${with_pp}.proj" \
                         "--decode --skip_untagged --stop_after $stop" \
                         "1> $HOME/data/votes/$target.$corpus.$parser.trees_${trees}.binary_${binary}.with_pp_${with_pp}.vote" \
-                        "2> $HOME/data/logs/$target.$corpus.$parser.trees_${trees}.binary_${binary}.with_pp_${with_pp}.vote.log" >> $HOME/run/commands_vote_${corpus}.txt
+                        "2> $HOME/data/logs/$target.$corpus.$parser.trees_${trees}.binary_${binary}.with_pp_${with_pp}.vote.log" \
+                        >> $HOME/run/commands_vote_${corpus}.txt
                     done
                 done
             done

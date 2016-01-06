@@ -23,7 +23,8 @@ for corpus in bible; do
                                 "--norm_before standardize --norm_after softmax --binary $binary --trees $trees --with_pp $with_pp" \
                                 "--stop_after $stop" \
                                 "1> $HOME/data/projections/${source}-${target}.$corpus.$parser.trees=${trees}.binary=${binary}.with_pp=${with_pp}.proj" \
-                                "2> $HOME/data/logs/${source}-${target}.$corpus.$parser.trees_${trees}.binary_${binary}.with_pp_${with_pp}.proj.log" >> $HOME/run/commands_project_${corpus}.txt
+                                "2> $HOME/data/logs/${source}-${target}.$corpus.$parser.trees_${trees}.binary_${binary}.with_pp_${with_pp}.proj.log" \
+                                >> $HOME/run/commands_project_${corpus}.txt
                             fi
                         done
                     done
