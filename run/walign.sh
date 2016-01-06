@@ -22,7 +22,7 @@ for corpus in bible; do
                 echo "$HOME/tools/walign/fast_align/fast_align -d -o -v -r -i" \
                 "/home/bplank/preprocess-holy-data/data/walign/${l1}-${l2}.${corpus}.spairs" \
                 "1> $HOME/data/walign/${l1}-${l2}.${corpus}.reverse.wal" \
-                "2> $HOME/data/logs/${l1}-${l2}.${corpus}.log" >> $HOME/run/commands_walign_${corpus}.txt
+                "2> $HOME/data/logs/${l1}-${l2}.${corpus}.reverse.log" >> $HOME/run/commands_walign_${corpus}.txt
             fi
         done
     done
