@@ -14,7 +14,7 @@ for corpus in bible; do
                     for parser in svm_mira; do
                         for target in `cat /home/bplank/preprocess-holy-data/languages/trg-src-${corpus}.txt`; do
                             echo "python $HOME/src/projection/vote_pos_and_deps.py" \
-                            "--target /home/bplank/multilingparse/data/unlab/tinytok/bible2project/en.2proj.conll" \
+                            "--target /home/bplank/multilingparse/data/unlab/tinytok/bible2project/$target.2proj.conll" \
                             "--projections $HOME/data/projections/*-${target}.$corpus.$parser.trees_${trees}.binary_${binary}.with_pp_${with_pp}.$aligner.proj" \
                             "--decode --skip_untagged --stop_after $stop" \
                             "1> $HOME/data/votes/$target.$corpus.$parser.trees_${trees}.binary_${binary}.with_pp_${with_pp}.$aligner.vote" \
