@@ -13,7 +13,12 @@ for corpus in bible; do
                     for binary in 1; do
                         for with_pp in 0; do
                             if [ "$source" != "$target" ]; then
-                                echo "python $HOME/src/projection/project.py --source /home/bplank/multilingparse/data/unlab/tinytok/bible2project/$source.2proj.conll --target /home/bplank/multilingparse/data/unlab/tinytok/bible2project/$target.2proj.conll --word_alignment $HOME/data/walign/${source}-${target}.$corpus.wal --sentence_alignment /home/bplank/preprocess-holy-data/data/salign/${source}-${target}.$corpus.sal --norm_before standardize --norm_after softmax --binary $binary --trees $trees --with_pp $with_pp 1> $HOME/data/projections/${source}-${target}.$corpus.$parser.trees=${trees}.binary=${binary}.with_pp=${with_pp}.proj 2> $HOME/data/logs/${source}-${target}.$corpus.$parser.trees=${trees}.binary=${binary}.with_pp=${with_pp}.proj.log" >> $HOME/run/commands_project_${corpus}.txt
+                                echo "python $HOME/src/projection/project.py
+                                --source /home/bplank/multilingparse/data/unlab/tinytok/bible2project/$source.2proj.conll
+                                --target /home/bplank/multilingparse/data/unlab/tinytok/bible2project/$target.2proj.conll
+                                --word_alignment $HOME/data/walign/${source}-${target}.$corpus.wal
+                                --sentence_alignment /home/bplank/preprocess-holy-data/data/salign/${source}-${target}.$corpus.sal
+                                --norm_before standardize --norm_after softmax --binary $binary --trees $trees --with_pp $with_pp 1> $HOME/data/projections/${source}-${target}.$corpus.$parser.trees=${trees}.binary=${binary}.with_pp=${with_pp}.proj 2> $HOME/data/logs/${source}-${target}.$corpus.$parser.trees=${trees}.binary=${binary}.with_pp=${with_pp}.proj.log" >> $HOME/run/commands_project_${corpus}.txt
                             fi
                         done
                     done

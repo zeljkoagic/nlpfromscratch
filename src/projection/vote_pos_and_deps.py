@@ -10,11 +10,22 @@ import copy
 from pathlib import Path
 import utils.score as score
 from dependency_decoding import chu_liu_edmonds
+import warnings
 
 
 def add_root_row(tensor):
     first_row = np.ones([1, tensor.shape[1], tensor.shape[2]]) * np.nan
     return np.vstack([first_row, tensor])
+
+
+def eliminate_all_nan_rows(M_proj):
+#   M_proj[np.isnan(M_proj)] = np.nanmin(M_proj)
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        by_row = np.nanmax(M_proj, axis=1)
+        all_nan_rows = np.isnan(by_row)
+        M_proj[all_nan_rows] = np.nanmin(M_proj)
 
 
 def vote_weight_matrix(sentence_tensor):
@@ -30,7 +41,7 @@ start_time = time.time()  # timing the script
 parser = argparse.ArgumentParser(description="Voting and CLE decoding on projected labels and weight matrices.")
 
 parser.add_argument("--target", required=True, help="target CoNLL file", type=Path)
-parser.add_argument("--votes", required=True, help="file with all votes merged", type=Path)
+parser.add_argument("--projections", required=True, help="path to vote files", type=Path, nargs="+")
 parser.add_argument("--stop_after", required=False, help="stop after n sentences")
 parser.add_argument('--inner_vote_pos', action='store_true', help="intra-language POS tag voting")
 parser.add_argument('--inner_vote_labels', action='store_true', help="intra-language dependency label voting")
@@ -55,10 +66,12 @@ current_sentence_source_languages = []
 
 skip_sentence = False  # skip sentences with empty sources
 
-for line in args.votes.open():
-    line = line.strip()
+vote_handles = [projection_file.open() for projection_file in args.projections]
 
-    if line and not skip_sentence:
+
+for lines in zip(*vote_handles):
+
+    if lines[0] != "\n" and not skip_sentence:
         current_sentence_source_languages.clear()  # TODO: This is redundant! Should be ordered set.
 
         # voting for tags, dependency labels and heads
@@ -66,14 +79,11 @@ for line in args.votes.open():
         overall_label_votes = Counter()
         overall_head_votes = None
 
-        # a line has n source languages delimited by "#"
-        sources = line.split("#")
-
         projection_weights_per_token = []
         current_sentence_tensor.append(projection_weights_per_token)
 
         # iterate through blocks provided by singled-out sources
-        for source in sources:
+        for source in lines:
             labels_and_heads = source.split("\t")
             # assert len(labels_and_heads) == 3
             if len(labels_and_heads) != 4:
@@ -123,7 +133,7 @@ for line in args.votes.open():
         if args.skip_untagged and current_pos_tags[-1] == "_":  # or current_dep_labels[-1] == "_": TODO everything gets skipped if dep=="_"!
             skip_sentence = True
 
-    elif not line:
+    elif lines[0] == "\n":
 
         current_sentence = conll.get_next_sentence(target_file_handle)  # has to be run even if skip_sentence == True!
 
@@ -137,6 +147,7 @@ for line in args.votes.open():
 
             # unify the source language matrices into a single a matrix
             current_sentence_matrix = vote_weight_matrix(current_sentence_tensor)
+            eliminate_all_nan_rows(current_sentence_matrix)
 
             # dump the raw projections into a file, for debug purposes
             if args.dump_npz:

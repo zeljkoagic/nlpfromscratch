@@ -52,7 +52,7 @@ if not args.trees:
     normalize_after_projection = normalizers[args.norm_after]
 else:
     normalize_before_projection = normalizers["identity"]
-    normalize_after_projection = normalizers["identity"]
+    normalize_after_projection = normalizers["softmax"]
 
 # source sentence getter is determined by args.trees
 source_data_getters = {0: conll.get_next_sentence_and_graph,
