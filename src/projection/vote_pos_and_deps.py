@@ -2,7 +2,7 @@ import argparse
 import numpy as np
 from collections import Counter
 import utils.conll as conll
-import mst.cle as cle
+# import mst.cle as cle
 import string
 import sys
 import time
@@ -19,8 +19,6 @@ def add_root_row(tensor):
 
 
 def eliminate_all_nan_rows(M_proj):
-#   M_proj[np.isnan(M_proj)] = np.nanmin(M_proj)
-
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         by_row = np.nanmax(M_proj, axis=1)
@@ -193,6 +191,8 @@ for lines in zip(*vote_handles):
 
         if args.stop_after and int(args.stop_after) == sentence_count:
             break
+
+assert all(h.read() == "" for h in vote_handles), "Projections differ in size"
 
 print("Scores:", " ".join(map(str, scorer.get_score_list())), file=sys.stderr)
 print("Execution time: %s sec" % (time.time() - start_time), file=sys.stderr)
