@@ -7,7 +7,7 @@ stop=${1:-100000}
 
 # for target in `cat $HOME/data/lists/sources.txt`; do
 for corpus in bible; do
-    > $HOME/run/commands_project_${corpus}.txt
+    > $HOME/run/commands_project_${corpus}_ibm1.txt
     for trees in 0 1; do
         for binary in 1; do
             for with_pp in 0; do
