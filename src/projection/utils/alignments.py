@@ -47,7 +47,9 @@ def read_word_alignments(filename):
             count += len(probabilities)
             similarity += sum(probabilities)
 
-    return waligns, 1  # TODO
+            assert len(probabilities) == len(pairs), "Prob-pair mismatch"
+
+    return waligns, similarity / count
 
 def get_alignment_matrix(shape, pairs, probabilities, binary=False):
     """Creates (m+1 x n+1) source-target alignment probability matrix.
