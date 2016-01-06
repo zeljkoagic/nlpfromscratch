@@ -9,6 +9,12 @@ import time
 import copy
 from pathlib import Path
 import utils.score as score
+from dependency_decoding import chu_liu_edmonds
+
+
+def add_root_row(tensor):
+    first_row = np.ones([1, tensor.shape[1], tensor.shape[2]]) * np.nan
+    return np.vstack([first_row, tensor])
 
 
 def vote_weight_matrix(sentence_tensor):
@@ -17,7 +23,7 @@ def vote_weight_matrix(sentence_tensor):
     :param sentence_tensor:
     :return:
     """
-    return sentence_tensor.sum(axis=2)
+    return np.nansum(sentence_tensor, axis=2)
 
 start_time = time.time()  # timing the script
 
@@ -127,7 +133,7 @@ for line in args.votes.open():
 
             # construct a 3-dim tensor where each slice along the third dimension corresponds
             # to a weight matrix for a given source language
-            current_sentence_tensor = np.array(current_sentence_tensor)
+            current_sentence_tensor = add_root_row(np.array(current_sentence_tensor))
 
             # unify the source language matrices into a single a matrix
             current_sentence_matrix = vote_weight_matrix(current_sentence_tensor)
@@ -142,7 +148,8 @@ for line in args.votes.open():
                          tokens=[token.form for token in current_sentence])
 
             if args.decode:
-                decoded_heads = cle.mdst(current_sentence_matrix)  # do the MST magic TODO Change to new CLE!!!
+                # decoded_heads = cle.mdst(current_sentence_matrix)  # do the MST magic TODO Change to new CLE!!!
+                decoded_heads = chu_liu_edmonds(current_sentence_matrix)[1:]
             else:
                 decoded_heads = [0 for _ in current_sentence]
 
