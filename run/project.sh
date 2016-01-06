@@ -18,7 +18,6 @@ for corpus in bible; do
                                 echo "python $HOME/src/projection/project.py" \
                                 "--source /home/bplank/multilingparse/data/unlab/tinytok/bible2project/$source.2proj.conll" \
                                 "--target /home/bplank/multilingparse/data/unlab/tinytok/bible2project/$target.2proj.conll" \
-                                #"--word_alignment /home/bplank/preprocess-holy-data/data/walign/${source}-${target}.$corpus.reverse.wal" \
                                 "--word_alignment $HOME/data/walign/${source}-${target}.$corpus.reverse.wal" \
                                 "--sentence_alignment /home/bplank/preprocess-holy-data/data/salign/${source}-${target}.$corpus.sal" \
                                 "--norm_before standardize --norm_after softmax --binary $binary --trees $trees --with_pp $with_pp" \
