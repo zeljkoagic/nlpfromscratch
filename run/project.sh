@@ -3,6 +3,8 @@
 HOME=/home/zagic/nlpfromscratch
 # HOME=/Users/zagic/Work/cph/pycharm_projects/nlpfromscratch
 
+stop=${1:-100000}
+
 # for target in `cat $HOME/data/lists/sources.txt`; do
 for corpus in bible; do
     > $HOME/run/commands_project_${corpus}.txt
@@ -19,7 +21,7 @@ for corpus in bible; do
                                 "--word_alignment $HOME/data/walign/${source}-${target}.$corpus.wal" \
                                 "--sentence_alignment /home/bplank/preprocess-holy-data/data/salign/${source}-${target}.$corpus.sal" \
                                 "--norm_before standardize --norm_after softmax --binary $binary --trees $trees --with_pp $with_pp" \
-                                "--stop_after $1" \
+                                "--stop_after $stop" \
                                 "1> $HOME/data/projections/${source}-${target}.$corpus.$parser.trees=${trees}.binary=${binary}.with_pp=${with_pp}.proj" \
                                 "2> $HOME/data/logs/${source}-${target}.$corpus.$parser.trees_${trees}.binary_${binary}.with_pp_${with_pp}.proj.log" >> $HOME/run/commands_project_${corpus}.txt
                             fi
