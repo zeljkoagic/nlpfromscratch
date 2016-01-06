@@ -150,6 +150,7 @@ for line in args.votes.open():
             if args.decode:
                 # decoded_heads = cle.mdst(current_sentence_matrix)  # do the MST magic TODO Change to new CLE!!!
                 decoded_heads = chu_liu_edmonds(current_sentence_matrix)[1:]
+                print(decoded_heads)
             else:
                 decoded_heads = [0 for _ in current_sentence]
 
