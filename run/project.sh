@@ -24,7 +24,7 @@ for corpus in bible; do
                                 "--stop_after $stop" \
                                 "1> $HOME/data/projections/${source}-${target}.$corpus.$parser.trees_${trees}.binary_${binary}.with_pp_${with_pp}.ibm1.proj" \
                                 "2> $HOME/data/logs/${source}-${target}.$corpus.$parser.trees_${trees}.binary_${binary}.with_pp_${with_pp}.proj.log" \
-                                >> $HOME/run/commands_project_${corpus}.txt
+                                >> $HOME/run/commands_project_${corpus}_ibm1.txt
                             fi
                         done
                     done
