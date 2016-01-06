@@ -192,7 +192,7 @@ for lines in zip(*vote_handles):
         if args.stop_after and int(args.stop_after) == sentence_count:
             break
 
-assert all(h.read() == "" for h in vote_handles), "Projections differ in size"
+# assert all(h.read() == "" for h in vote_handles), "Projections differ in size"
 
 print("Scores:", " ".join(map(str, scorer.get_score_list())), file=sys.stderr)
 print("Execution time: %s sec" % (time.time() - start_time), file=sys.stderr)
