@@ -111,7 +111,7 @@ def project_dependencies_to_target_new(S, A):
     # for each dependent d in source graph (dependents are rows!)
     rows = np.expand_dims(A, axis=-1)
     targets_for_row = np.zeros([A.shape[0], T.shape[0], T.shape[0]])
-    
+
     for h in range(m_plus_one):
         np.dot(rows, A[h].reshape(1, -1), out=targets_for_row)
         targets_for_row *= S[:, h].reshape(-1, 1, 1)

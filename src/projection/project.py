@@ -52,7 +52,7 @@ if not args.trees:
     normalize_after_projection = normalizers[args.norm_after]
 else:
     normalize_before_projection = normalizers["identity"]
-    normalize_after_projection = normalizers["softmax"]
+    normalize_after_projection = normalizers["identity"]
 
 # source sentence getter is determined by args.trees
 source_data_getters = {0: conll.get_next_sentence_and_graph,
@@ -123,7 +123,7 @@ for target_sentence in conll.sentences(target_file_handle, sentence_getter=conll
     n = len(target_sentence)
 
     A = align.get_alignment_matrix((m + 1, n + 1), walign_pairs, walign_probs, args.binary)
-    T = align.project_dependencies_to_target(S, A)
+    T = align.project_dependencies_to_target_new(S, A)
 
     # normalize the target matrix
     T = normalize_after_projection(T)
