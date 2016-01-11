@@ -3,7 +3,7 @@ import numpy as np
 
 @cython.boundscheck(False)
 def project_dependencies_faster(S, A):
-    # S must be a csr_matrix
+    # S must be a coo_matrix
 
     cdef:
         double[:,:] T = np.full(shape=(A.shape[1], A.shape[1]), fill_value=np.nan)
