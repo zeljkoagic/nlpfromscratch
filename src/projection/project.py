@@ -10,6 +10,7 @@ from pathlib import Path
 import numpy as np
 from scipy import sparse
 import utils.project_deps as project
+import pyximport; pyximport.install()
 
 start_time = time.time()  # timing the script
 
