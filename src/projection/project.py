@@ -115,7 +115,7 @@ for target_sentence in conll.sentences(target_file_handle, sentence_getter=conll
     n = len(target_sentence)
 
     A = align.get_alignment_matrix((m + 1, n + 1), walign_pairs, walign_probs, args.binary)
-    print(sparse.coo_matrix(S))
+    #print(sparse.coo_matrix(S))
     print(sparse.csr_matrix(A))
     T = project.project_dependencies_faster(sparse.coo_matrix(S), sparse.csr_matrix(A))  # We now use sparse matrices
 
