@@ -8,8 +8,8 @@ import sys
 import time
 from pathlib import Path
 import numpy as np
-import mst.cle as cle
-from dependency_decoding import chu_liu_edmonds
+from scipy import sparse
+import utils.project_deps as project
 
 start_time = time.time()  # timing the script
 
@@ -123,41 +123,10 @@ for target_sentence in conll.sentences(target_file_handle, sentence_getter=conll
     n = len(target_sentence)
 
     A = align.get_alignment_matrix((m + 1, n + 1), walign_pairs, walign_probs, args.binary)
-    T = align.project_dependencies_to_target_new(S, A)
+    T = project.project_dependencies_faster(sparse.coo_matrix(S), sparse.csr_matrix(A))  # TODO
 
     # normalize the target matrix
     T = normalize_after_projection(T)
-
-
-
-    #print(S, file=sys.stderr)
-    # print(A)
-    # print(T)
-    # print(cle.mdst(S[1:,:]) == [token.head for token in source_sentence])
-
-    #pred_heads, tree_score = chu_liu_edmonds(S)
-    #pred_heads = pred_heads[1:]
-    # print(heads, tree_score)
-
-
-    # pred_heads = cle.mdst(S[1:,:], greedy=False)
-    #gold_heads = [token.head for token in source_sentence]
-    #assert len(pred_heads) == len(gold_heads)
-
-    #total_correct += sum(pred == gold for pred, gold in zip(pred_heads, gold_heads))
-    #total += len(gold_heads)
-
-    #pred_heads = np.array(pred_heads)
-    #gold_heads = np.array(gold_heads)
-    #wrong_indices = np.where(~(pred_heads == gold_heads))[0]
-
-    #if len(wrong_indices):
-        # print(wrong_indices, gold_heads[wrong_indices], pred_heads[wrong_indices], file=sys.stderr)
-        # print(gold_heads, pred_heads, file=sys.stderr)
-    #    pass
-    #else:
-    #    total_correct_sent += 1
-    #total_sent += 1
 
     # TODO Do we need to verify whether this is a good proxy for language similarity?
     # TODO: Should we think about when we apply the language pair similarity?
@@ -175,8 +144,6 @@ for target_sentence in conll.sentences(target_file_handle, sentence_getter=conll
                                   " ".join(["{}:{}".format(t[0], t[1]) for t in projected_tags.most_common()]),
                                   " ".join(["{}:{}".format(l[0], l[1]) for l in projected_labels.most_common()]),
                                   " ".join(map(str, T[token.idx]))))
-        # print(token, " ".join(map(str, T[token.idx])))
     print()
 
 print("Execution time: %s sec" % (time.time() - start_time), file=sys.stderr)
-#print("Score: ", total_correct / total, total_correct_sent / total_sent, file=sys.stderr)
