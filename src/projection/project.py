@@ -9,8 +9,8 @@ import time
 from pathlib import Path
 import numpy as np
 from scipy import sparse
-import utils.project_deps as project
 import pyximport; pyximport.install()
+import utils.project_deps as project
 
 start_time = time.time()  # timing the script
 
