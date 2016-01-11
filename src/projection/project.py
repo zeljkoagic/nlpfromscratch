@@ -1,5 +1,5 @@
 import argparse
-from collections import defaultdict, Counter
+from collections import Counter
 import utils.alignments as align
 import utils.conll as conll
 import utils.normalize as norm
@@ -7,7 +7,6 @@ from functools import partial
 import sys
 import time
 from pathlib import Path
-import numpy as np
 from scipy import sparse
 import pyximport; pyximport.install()
 import utils.project_deps as project
@@ -37,23 +36,17 @@ parser.add_argument('--use_similarity', action='store_true', help="use word alig
 parser.add_argument("--stop_after", required=False, help="stop after n sentences")
 parser.add_argument("--temperature", required=False, help="softmax temperature", type=float, default=1.0)
 
-##total = 0
-#total_sent = 0
-#total_correct = 0
-#total_correct_sent = 0
-
 args = parser.parse_args()
 
 normalizers['softmax'] = partial(norm.softmax, temperature=args.temperature)
 
 source_language_name = args.source.stem.split(".", 1)[0]
 
-if not args.trees:
-    normalize_before_projection = normalizers[args.norm_before]
-    normalize_after_projection = normalizers[args.norm_after]
-else:
+normalize_before_projection = normalizers[args.norm_before]
+normalize_after_projection = normalizers[args.norm_after]
+
+if args.trees:
     normalize_before_projection = normalizers["identity"]
-    normalize_after_projection = normalizers["identity"]
 
 # source sentence getter is determined by args.trees
 source_data_getters = {0: conll.get_next_sentence_and_graph,
@@ -106,8 +99,6 @@ for target_sentence in conll.sentences(target_file_handle, sentence_getter=conll
     source_sid_counter += 1
     target_sid_counter += 1
 
-    np.set_printoptions(linewidth=np.nan)
-
     # source matrix normalization
     S = normalize_before_projection(S)
 
@@ -124,7 +115,7 @@ for target_sentence in conll.sentences(target_file_handle, sentence_getter=conll
     n = len(target_sentence)
 
     A = align.get_alignment_matrix((m + 1, n + 1), walign_pairs, walign_probs, args.binary)
-    T = project.project_dependencies_faster(sparse.coo_matrix(S), sparse.csr_matrix(A))  # TODO
+    T = project.project_dependencies_faster(sparse.coo_matrix(S), sparse.csr_matrix(A))  # We now use sparse matrices
 
     # normalize the target matrix
     T = normalize_after_projection(T)
