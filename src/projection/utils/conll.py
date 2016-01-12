@@ -114,9 +114,6 @@ def get_next_sentence_and_graph(conll_file_handle):
         dependency_labels.append(line[7])
         line = conll_file_handle.readline().strip().split()
 
-    #next_graph = sparse.coo_matrix((confidences, (dep_indices, head_indices)),
-    #                               shape=(len(next_sentence) + 1, len(next_sentence) + 1))
-
     next_graph = CooMatrix(dep_indices, head_indices, confidences, shape=(len(next_sentence) + 1, len(next_sentence) + 1))
     return next_sentence, next_graph, parts_of_speech, dependency_labels
 
