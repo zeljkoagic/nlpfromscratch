@@ -1,5 +1,3 @@
-import numpy as np
-from scipy import sparse
 from utils.coo_matrix_nocheck import CooMatrix
 
 
@@ -76,14 +74,6 @@ def sentences(conll_file_handle, sentence_getter):
         yield next_sentence
 
 
-def print_conll(sentences):
-    """Prints CoNLL sentences to stdout."""
-    for sentence in sentences:
-        for token in sentence:
-            print(token)
-        print
-
-
 def get_next_sentence_and_graph(conll_file_handle):
     """Reads next sentence, graph, and POS-tags from augmented CoNLL file.
 
@@ -147,12 +137,3 @@ def get_next_sentence_and_tree(conll_file_handle):
                            shape=(len(next_sentence) + 1, len(next_sentence) + 1))
 
     return next_sentence, next_graph, parts_of_speech
-
-
-def write(sentences, filename):
-    """Writes CoNLL sentences into a file."""
-    with open(filename) as conll_file:
-        for sentence in sentences:
-            for token in sentence:
-                conll_file.write(str(token) + "\n")
-            conll_file.write("\n")
