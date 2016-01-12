@@ -6,10 +6,9 @@ HOME=/home/zagic/nlpfromscratch
 stop=${1:-100000}
 
 # for target in `cat $HOME/data/lists/sources.txt`; do
-for corpus in bible; do
-    > $HOME/run/commands_project_${corpus}_ibm1.txt
+for corpus in bible watchtower; do
     for trees in 0 1; do
-        for binary in 1; do
+        for binary in 0 1; do
             for with_pp in 0; do
                 for aligner in ibm1 ibm2; do
                     for target in `cat /home/bplank/preprocess-holy-data/languages/trg-src-${corpus}.txt`; do
@@ -19,7 +18,7 @@ for corpus in bible; do
                                     echo "python $HOME/src/projection/project.py" \
                                     "--source /home/bplank/multilingparse/data/unlab/tinytok/bible2project/$source.2proj.conll" \
                                     "--target /home/bplank/multilingparse/data/unlab/tinytok/bible2project/$target.2proj.conll" \
-                                    "--word_alignment /home/bplank/preprocess-holy-data/data/walign/${source}-${target}.$corpus.reverse.wal" \
+                                    "--word_alignment /home/bplank/preprocess-holy-data/data/walign/${source}-${target}.$corpus.$aligner.reverse.wal" \
                                     "--sentence_alignment /home/bplank/preprocess-holy-data/data/salign/${source}-${target}.$corpus.sal" \
                                     "--norm_before standardize --norm_after softmax --binary $binary --trees $trees --with_pp $with_pp" \
                                     "--stop_after $stop" \
