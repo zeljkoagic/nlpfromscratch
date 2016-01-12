@@ -16,8 +16,8 @@ for corpus in bible watchtower; do
                             for parser in svm_mira; do
                                 if [ "$source" != "$target" ]; then
                                     echo "python $HOME/src/projection/project.py" \
-                                    "--source /home/bplank/multilingparse/data/unlab/tinytok/bible2project/$source.2proj.conll" \
-                                    "--target /home/bplank/multilingparse/data/unlab/tinytok/bible2project/$target.2proj.conll" \
+                                    "--source /home/bplank/parse-holy-data/data/2project/${corpus}/$source.2proj.conll" \
+                                    "--target /home/bplank/parse-holy-data/data/2project/${corpus}/$target.2proj.conll" \
                                     "--word_alignment /home/bplank/preprocess-holy-data/data/walign/${source}-${target}.$corpus.$aligner.reverse.wal" \
                                     "--sentence_alignment /home/bplank/preprocess-holy-data/data/salign/${source}-${target}.$corpus.sal" \
                                     "--norm_before standardize --norm_after softmax --binary $binary --trees $trees --with_pp $with_pp" \
