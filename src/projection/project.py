@@ -8,6 +8,7 @@ import sys
 import time
 from pathlib import Path
 from scipy import sparse
+import numpy as np
 import pyximport; pyximport.install()
 import utils.project_deps as project
 
@@ -93,14 +94,19 @@ for target_sentence in conll.sentences(target_file_handle, sentence_getter=conll
     assert source_sid_counter == source_sid
 
     # now that the sentence ids match, get the sentence, POS, and graph from the source
-    source_sentence, S, source_pos_tags, source_dep_labels = get_source_data(source_file_handle)
+    source_sentence, S_sparse, source_pos_tags, source_dep_labels = get_source_data(source_file_handle)
 
     # source and target sentences are retrieved, increment counters
     source_sid_counter += 1
     target_sid_counter += 1
 
     # source matrix normalization
+    S = np.full(S_sparse.shape, fill_value=np.nan)
     S = normalize_before_projection(S)
+    non_nan_mask = np.argwhere(~np.isnan(S))
+    rows = non_nan_mask[:, 0]
+    cols = non_nan_mask[:, 1]
+    S_sparse = sparse.coo_matrix((S[rows, cols], (rows, cols)))
 
     # get word alignments for that sentence pair
     walign_pairs, walign_probs = word_alignments[walign_counter]
@@ -114,8 +120,8 @@ for target_sentence in conll.sentences(target_file_handle, sentence_getter=conll
     m = len(source_sentence)
     n = len(target_sentence)
 
-    A = align.get_alignment_matrix((m + 1, n + 1), walign_pairs, walign_probs, args.binary)
-    T = project.project_dependencies_faster(S, A)  # We now use sparse matrices
+    A_sparse = align.get_alignment_matrix((m + 1, n + 1), walign_pairs, walign_probs, args.binary)
+    T = project.project_dependencies_faster(S_sparse, A_sparse)  # We now use sparse matrices
 
     # normalize the target matrix
     T = normalize_after_projection(T)
