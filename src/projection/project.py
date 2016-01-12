@@ -95,7 +95,7 @@ for target_sentence in conll.sentences(target_file_handle, sentence_getter=conll
     assert source_sid_counter == source_sid
 
     # now that the sentence ids match, get the sentence, POS, and graph from the source
-    source_sentence, S_sparse, source_pos_tags, source_dep_labels = get_source_data(source_file_handle)
+    source_sentence, S_sparse, source_pos_tags = get_source_data(source_file_handle)
 
     # source and target sentences are retrieved, increment counters
     source_sid_counter += 1

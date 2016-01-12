@@ -92,7 +92,7 @@ def get_next_sentence_and_graph(conll_file_handle):
     """
     next_sentence = []
     parts_of_speech = []
-    dependency_labels = []
+    # dependency_labels = []
     head_indices = []
     dep_indices = []
     confidences = []
@@ -111,11 +111,11 @@ def get_next_sentence_and_graph(conll_file_handle):
             confidences.append(float(confidence))
 
         parts_of_speech.append(line[3])
-        dependency_labels.append(line[7])
+        # dependency_labels.append(line[7])
         line = conll_file_handle.readline().strip().split()
 
     next_graph = CooMatrix(dep_indices, head_indices, confidences, shape=(len(next_sentence) + 1, len(next_sentence) + 1))
-    return next_sentence, next_graph, parts_of_speech, dependency_labels
+    return next_sentence, next_graph, parts_of_speech  #, dependency_labels
 
 
 def get_next_sentence_and_tree(conll_file_handle):
@@ -128,7 +128,7 @@ def get_next_sentence_and_tree(conll_file_handle):
     next_sentence = []
     next_heads = []
     parts_of_speech = []
-    dependency_labels = []
+    # dependency_labels = []
 
     line = conll_file_handle.readline().strip().split()
 
@@ -136,7 +136,7 @@ def get_next_sentence_and_tree(conll_file_handle):
         next_sentence.append(ConllToken.from_list(line[:8]))
         next_heads.append(int(line[6]))
         parts_of_speech.append(line[3])
-        dependency_labels.append(line[7])
+        # dependency_labels.append(line[7])
         line = conll_file_handle.readline().strip().split()
 
     # create graph (n+1 x n+1)
@@ -148,7 +148,7 @@ def get_next_sentence_and_tree(conll_file_handle):
         next_graph[it+1][head] = 1.0
         it += 1
 
-    return next_sentence, next_graph, parts_of_speech, dependency_labels
+    return next_sentence, next_graph, parts_of_speech  #, dependency_labels
 
 
 def write(sentences, filename):
