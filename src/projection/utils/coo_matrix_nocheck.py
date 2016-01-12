@@ -7,6 +7,6 @@ class CooMatrix:
         self.data = np.array(data)
         self.shape = shape
 
-    def standardize(self, M):
-        M.data -= M.data.mean()
-        M.data /= M.data.std()
+    def standardize(self):
+        self.data -= self.data.mean()
+        self.data /= self.data.std()
