@@ -1,4 +1,6 @@
 import numpy as np
+from scipy import sparse
+
 
 class ConllToken:
     """todo"""
@@ -103,14 +105,21 @@ def get_next_sentence_and_graph(conll_file_handle):
 
     # the graph has to be stored after loading the sentence
     # as we don't know the sentence length before
-    next_graph = np.ones((len(next_sentence) + 1, len(next_sentence) + 1)) * np.nan
+    head_indices = []
+    dep_indices = []
+    confidences = []
 
     it = 0
     for part in graph_parts:
         it += 1
         for item in part:
             head, confidence = item.split(":")
-            next_graph[it][int(head)] = float(confidence)
+            head_indices.append(int(head))
+            dep_indices.append(it)
+            confidences.append(float(confidence))
+
+    next_graph = sparse.coo_matrix((confidences, (dep_indices, head_indices)),
+                                   shape=(len(next_sentence) + 1, len(next_sentence) + 1))
 
     return next_sentence, next_graph, parts_of_speech, dependency_labels
 

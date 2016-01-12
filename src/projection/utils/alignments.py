@@ -1,6 +1,7 @@
 from __future__ import division
 import numpy as np
 from collections import defaultdict, Counter
+from scipy import sparse
 
 
 def read_sentence_alignments(filename):
@@ -51,6 +52,7 @@ def read_word_alignments(filename):
 
     return waligns, similarity / count
 
+
 def get_alignment_matrix(shape, pairs, probabilities, binary=False):
     """Creates (m+1 x n+1) source-target alignment probability matrix.
 
@@ -64,19 +66,29 @@ def get_alignment_matrix(shape, pairs, probabilities, binary=False):
     if len(pairs) != len(probabilities):
         raise Exception("Mismatch in sizes of pairs (%s) and probabilities (%s)" % (len(pairs), len(probabilities)))
 
-    matrix = np.ones(shape) * np.nan  # change here for non-zero default
+    # matrix = np.ones(shape) * np.nan  # change here for non-zero default
+    src_indices = []
+    trg_indices = []
+
+    for it in range(len(pairs)):
+        source_id, target_id = pairs[it].split("-")
+        src_indices.append(source_id)
+        trg_indices.append(target_id)
+        # probability = probabilities[it]
+        # matrix[int(source_id)+1, int(target_id)+1] = float(probability)
+
+    src_indices.append(0)
+    trg_indices.append(0)
+    probabilities.append(1.0)
 
     if binary:
         probabilities = np.ones_like(probabilities)
 
-    for it in range(len(pairs)):
-        source_id, target_id = pairs[it].split("-")
-        probability = probabilities[it]
-        matrix[int(source_id)+1, int(target_id)+1] = float(probability)
+    matrix = sparse.coo_matrix((probabilities, (src_indices, trg_indices)), shape=shape)
 
-    matrix[0, 0] = 1.0  # source root always aligns to target root
+    # matrix[0, 0] = 1.0  # source root always aligns to target root
     # return np.where(matrix == 0, [0.5], matrix)
-    return matrix
+    return matrix.tocsr()
 
 
 def project_dependencies_to_target(S, A):  # TODO Matrix S must be normalized, i.e., negative values are not allowed!
