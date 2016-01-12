@@ -71,7 +71,7 @@ def get_alignment_matrix(shape, pairs, probabilities, binary=False):
     trg_indices = []
 
     for it in range(len(pairs)):
-        source_id, target_id = pairs[it].split("-")
+        source_id, target_id = pairs[it]
         src_indices.append(source_id)
         trg_indices.append(target_id)
         # probability = probabilities[it]
@@ -148,7 +148,7 @@ def project_token_labels(source_labels, wa_pairs, wa_probs, weigh_votes=True):
 
     it = 0
     for pair in wa_pairs:
-        sid, tid = pair.split("-")
+        sid, tid = pair
         if weigh_votes:
             label_votes[int(tid) + 1].update({source_labels[int(sid)]: wa_probs[it]})
         else:

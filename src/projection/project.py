@@ -112,6 +112,7 @@ for target_sentence in conll.sentences(target_file_handle, sentence_getter=conll
 
     # get word alignments for that sentence pair
     walign_pairs, walign_probs = word_alignments[walign_counter]
+    walign_pairs = [pair.split("-") for pair in walign_pairs]
     walign_counter += 1
 
     # project parts of speech and dependency labels
