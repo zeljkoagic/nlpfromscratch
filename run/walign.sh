@@ -9,7 +9,7 @@ HOME=/home/zagic/nlpfromscratch
 # fi
 
 # iterate through all language pairs
-for corpus in bible; do
+for corpus in bible watchtower; do
     > $HOME/run/commands_walign_${corpus}.txt
     for l1 in `cat /home/bplank/preprocess-holy-data/languages/trg-src-${corpus}.txt`; do
         for l2 in `cat /home/bplank/preprocess-holy-data/languages/trg-src-${corpus}.txt`; do
