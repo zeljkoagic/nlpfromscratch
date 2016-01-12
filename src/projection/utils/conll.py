@@ -92,7 +92,6 @@ def get_next_sentence_and_graph(conll_file_handle):
     """
     next_sentence = []
     parts_of_speech = []
-    # dependency_labels = []
     head_indices = []
     dep_indices = []
     confidences = []
@@ -111,11 +110,12 @@ def get_next_sentence_and_graph(conll_file_handle):
             confidences.append(float(confidence))
 
         parts_of_speech.append(line[3])
-        # dependency_labels.append(line[7])
         line = conll_file_handle.readline().strip().split()
 
-    next_graph = CooMatrix(dep_indices, head_indices, confidences, shape=(len(next_sentence) + 1, len(next_sentence) + 1))
-    return next_sentence, next_graph, parts_of_speech  #, dependency_labels
+    next_graph = CooMatrix(dep_indices, head_indices, confidences,
+                           shape=(len(next_sentence) + 1, len(next_sentence) + 1))
+
+    return next_sentence, next_graph, parts_of_speech
 
 
 def get_next_sentence_and_tree(conll_file_handle):
@@ -126,29 +126,27 @@ def get_next_sentence_and_tree(conll_file_handle):
     :return: <list of tokens, sentence dependency tree, parts of speech, dependency labels> 4-tuple
     """
     next_sentence = []
-    next_heads = []
     parts_of_speech = []
-    # dependency_labels = []
+    head_indices = []
+    dep_indices = []
+    confidences = []
 
     line = conll_file_handle.readline().strip().split()
 
+    it = 0
     while line:
+        it += 1
         next_sentence.append(ConllToken.from_list(line[:8]))
-        next_heads.append(int(line[6]))
+        head_indices.append(int(line[6]))
+        dep_indices.append(it)
+        confidences.append(1.0)
         parts_of_speech.append(line[3])
-        # dependency_labels.append(line[7])
         line = conll_file_handle.readline().strip().split()
 
-    # create graph (n+1 x n+1)
-    next_graph = np.ones((len(next_sentence) + 1, len(next_sentence) + 1)) * np.nan
+    next_graph = CooMatrix(dep_indices, head_indices, confidences,
+                           shape=(len(next_sentence) + 1, len(next_sentence) + 1))
 
-    # assign the collected heads to the graph
-    it = 0
-    for head in next_heads:
-        next_graph[it+1][head] = 1.0
-        it += 1
-
-    return next_sentence, next_graph, parts_of_speech  #, dependency_labels
+    return next_sentence, next_graph, parts_of_speech
 
 
 def write(sentences, filename):
