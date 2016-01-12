@@ -106,7 +106,7 @@ for target_sentence in conll.sentences(target_file_handle, sentence_getter=conll
     non_nan_mask = np.argwhere(~np.isnan(S))
     rows = non_nan_mask[:, 0]
     cols = non_nan_mask[:, 1]
-    S_sparse = sparse.coo_matrix((S[rows, cols], (rows, cols)))
+    S_sparse = sparse.coo_matrix((S[rows, cols], (rows, cols)), shape=S.shape)
 
     # get word alignments for that sentence pair
     walign_pairs, walign_probs = word_alignments[walign_counter]
