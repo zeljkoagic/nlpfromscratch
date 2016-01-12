@@ -47,8 +47,7 @@ def project_dependencies_faster(S, A):
 
                 align_prob_j_to_j = align_data[l]
 
-                T[t_i, t_j] = np.fmax(source_edge_score * align_prob_i_to_i  * align_prob_j_to_j,
-                                  T[t_i, t_j])
+                T[t_i, t_j] = max(source_edge_score * align_prob_i_to_i  * align_prob_j_to_j, T[t_i, t_j])
 
     return np.array(T, copy=False)
 
