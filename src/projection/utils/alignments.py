@@ -42,7 +42,7 @@ def read_word_alignments(filename):
 
         if alignment_items:
             # account for the alignment file format
-            pairs = alignment_items[::2]
+            pairs = [pair.split("-") for pair in alignment_items[::2]]
             probabilities = [float(p) for p in alignment_items[1::2]]
             waligns.append((pairs, probabilities))
             count += len(probabilities)
