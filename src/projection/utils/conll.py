@@ -1,5 +1,6 @@
 import numpy as np
 from scipy import sparse
+from utils.coo_matrix_nocheck import CooMatrix
 
 
 class ConllToken:
@@ -104,8 +105,7 @@ def get_next_sentence_and_graph(conll_file_handle):
         next_sentence.append(ConllToken.from_list(line[:8]))
         graph_parts = [item.split(":") for item in line[8:]]
 
-        for part in graph_parts:  # TODO
-            head, confidence = part
+        for head, confidence in graph_parts:  # TODO
             head_indices.append(int(head))
             dep_indices.append(it)
             confidences.append(float(confidence))
@@ -114,9 +114,10 @@ def get_next_sentence_and_graph(conll_file_handle):
         dependency_labels.append(line[7])
         line = conll_file_handle.readline().strip().split()
 
-    next_graph = sparse.coo_matrix((confidences, (dep_indices, head_indices)),
-                                   shape=(len(next_sentence) + 1, len(next_sentence) + 1))
+    #next_graph = sparse.coo_matrix((confidences, (dep_indices, head_indices)),
+    #                               shape=(len(next_sentence) + 1, len(next_sentence) + 1))
 
+    next_graph = CooMatrix(dep_indices, head_indices, confidences, shape=(len(next_sentence) + 1, len(next_sentence) + 1))
     return next_sentence, next_graph, parts_of_speech, dependency_labels
 
 

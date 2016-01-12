@@ -11,6 +11,7 @@ from scipy import sparse
 import numpy as np
 import pyximport; pyximport.install()
 import utils.project_deps as project
+from utils.coo_matrix_nocheck import CooMatrix
 
 start_time = time.time()  # timing the script
 
@@ -107,7 +108,7 @@ for target_sentence in conll.sentences(target_file_handle, sentence_getter=conll
     non_nan_mask = np.argwhere(~np.isnan(S))
     rows = non_nan_mask[:, 0]
     cols = non_nan_mask[:, 1]
-    S_sparse = sparse.coo_matrix((S[rows, cols], (rows, cols)), shape=S.shape)
+    S_sparse = CooMatrix(rows, cols, S[rows, cols], S.shape)
 
     # get word alignments for that sentence pair
     walign_pairs, walign_probs = word_alignments[walign_counter]
