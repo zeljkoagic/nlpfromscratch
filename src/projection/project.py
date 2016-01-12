@@ -134,15 +134,15 @@ for target_sentence in conll.sentences(target_file_handle, sentence_getter=conll
         T *= similarity
 
     # print the results
-    for token in target_sentence:
+    #for token in target_sentence:
         # get the POS projections for the current target token
-        projected_tags = P.get(token.idx) if token.idx in P else Counter({"_": 0})
-        projected_labels = L.get(token.idx) if token.idx in L else Counter({"_": 0})
+    #    projected_tags = P.get(token.idx) if token.idx in P else Counter({"_": 0})
+    #    projected_labels = L.get(token.idx) if token.idx in L else Counter({"_": 0})
 
-        print("%s\t%s\t%s\t%s" % (source_language_name,
-                                  " ".join(["{}:{}".format(t[0], t[1]) for t in projected_tags.most_common()]),
-                                  " ".join(["{}:{}".format(l[0], l[1]) for l in projected_labels.most_common()]),
-                                  " ".join(map(str, T[token.idx]))))
-    print()
+    #    print("%s\t%s\t%s\t%s" % (source_language_name,
+    #                              " ".join(["{}:{}".format(t[0], t[1]) for t in projected_tags.most_common()]),
+    #                              " ".join(["{}:{}".format(l[0], l[1]) for l in projected_labels.most_common()]),
+    #                              " ".join(map(str, T[token.idx]))))
+    #print()
 
 print("Execution time: %s sec" % (time.time() - start_time), file=sys.stderr)
