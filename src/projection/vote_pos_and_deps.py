@@ -58,7 +58,7 @@ scorer = score.TokenScorer()  # for scoring
 
 # current sentence information: tags, dependency labels, tensor, and source languages list
 current_pos_tags = []
-current_dep_labels = []
+# current_dep_labels = []
 current_sentence_tensor = []
 current_sentence_source_languages = []
 
@@ -74,7 +74,7 @@ for lines in zip(*vote_handles):
 
         # voting for tags, dependency labels and heads
         overall_pos_votes = Counter()
-        overall_label_votes = Counter()
+        # overall_label_votes = Counter()
         overall_head_votes = None
 
         projection_weights_per_token = []
@@ -84,17 +84,17 @@ for lines in zip(*vote_handles):
         for source in lines:
             labels_and_heads = source.split("\t")
             # assert len(labels_and_heads) == 3
-            if len(labels_and_heads) != 4:
+            if len(labels_and_heads) != 3:
                 continue  # skip empty source
 
             # get POS and dependencies parts
-            source_language_name, source_pos_votes, source_label_votes, source_head_votes = labels_and_heads
+            source_language_name, source_pos_votes, source_head_votes = labels_and_heads
             current_sentence_source_languages.append(source_language_name)
 
             # turn POS part & label part into Counters
             source_pos_votes = source_pos_votes.split()
             source_pos_counter = Counter()
-            source_label_votes = source_label_votes.split()
+            # source_label_votes = source_label_votes.split()
             source_label_counter = Counter()
 
             for vote in source_pos_votes:
@@ -103,15 +103,15 @@ for lines in zip(*vote_handles):
                 if args.inner_vote_pos:
                     break
 
-            for vote in source_label_votes:
-                label, num = vote.split(":")
-                source_label_counter.update({label: int(num)})
-                if args.inner_vote_labels:  # TODO Do we want inner voting to apply for dependency labels too?
-                    break
+            #for vote in source_label_votes:
+            #    label, num = vote.split(":")
+            #    source_label_counter.update({label: int(num)})
+            #    if args.inner_vote_labels:  # TODO Do we want inner voting to apply for dependency labels too?
+            #        break
 
             # add single source counts to the overall pool
             overall_pos_votes.update(source_pos_counter)
-            overall_label_votes.update(source_label_counter)
+            # overall_label_votes.update(source_label_counter)
 
             # collect heads for current source
             head_scores = list(map(float, source_head_votes.strip().split()))
@@ -125,7 +125,7 @@ for lines in zip(*vote_handles):
             continue
 
         current_pos_tags.append(overall_pos_votes.most_common(1)[0][0])
-        current_dep_labels.append(overall_label_votes.most_common(1)[0][0])
+        # current_dep_labels.append(overall_label_votes.most_common(1)[0][0])
 
         # skip sentences with at least one placeholder "_" POS tag (or dependency label?)
         if args.skip_untagged and current_pos_tags[-1] == "_":  # or current_dep_labels[-1] == "_": TODO everything gets skipped if dep=="_"!
@@ -172,7 +172,7 @@ for lines in zip(*vote_handles):
                 # token.head = np.argmax(current_sentence_matrix[jt, ])  # placeholder, per-token voting
 
                 # get the voted POS tag and dependency label
-                token.deprel = current_dep_labels[jt]
+                # token.deprel = current_dep_labels[jt]
                 if not args.pretagged:
                     token.cpos = "PUNCT" if token.form in string.punctuation else current_pos_tags[jt]
 

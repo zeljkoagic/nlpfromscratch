@@ -116,7 +116,7 @@ for target_sentence in conll.sentences(target_file_handle, sentence_getter=conll
 
     # project parts of speech and dependency labels
     P = align.project_token_labels(source_pos_tags, walign_pairs, walign_probs, args.with_pp)
-    L = align.project_token_labels(source_dep_labels, walign_pairs, walign_probs, args.with_pp)
+    # L = align.project_token_labels(source_dep_labels, walign_pairs, walign_probs, args.with_pp)
 
     # project the dependencies from source to target
     m = len(source_sentence)
@@ -138,12 +138,12 @@ for target_sentence in conll.sentences(target_file_handle, sentence_getter=conll
     for token in target_sentence:
         # get the POS projections for the current target token
         projected_tags = P.get(token.idx) if token.idx in P else Counter({"_": 0})
-        projected_labels = L.get(token.idx) if token.idx in L else Counter({"_": 0})
+        # projected_labels = L.get(token.idx) if token.idx in L else Counter({"_": 0})
 
-        print("%s\t%s\t%s\t%s" % (source_language_name,
-                                  " ".join(["{}:{}".format(t[0], t[1]) for t in projected_tags.most_common()]),
-                                  " ".join(["{}:{}".format(l[0], l[1]) for l in projected_labels.most_common()]),
-                                  " ".join(map(str, T[token.idx]))))
+        print("%s\t%s\t%s" % (source_language_name,
+                              " ".join(["{}:{}".format(t[0], t[1]) for t in projected_tags.most_common()]),
+                              # " ".join(["{}:{}".format(l[0], l[1]) for l in projected_labels.most_common()]),
+                              " ".join(map(str, T[token.idx]))))
     print()
 
 print("Execution time: %s sec" % (time.time() - start_time), file=sys.stderr)
