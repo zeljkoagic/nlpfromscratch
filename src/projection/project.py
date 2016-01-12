@@ -102,6 +102,7 @@ for target_sentence in conll.sentences(target_file_handle, sentence_getter=conll
 
     # source matrix normalization
     S = np.full(S_sparse.shape, fill_value=np.nan)
+    S[S_sparse.row, S_sparse.col] = S_sparse.data
     S = normalize_before_projection(S)
     non_nan_mask = np.argwhere(~np.isnan(S))
     rows = non_nan_mask[:, 0]
