@@ -77,6 +77,7 @@ def get_alignment_matrix(shape, pairs, probabilities, binary=False):
         # probability = probabilities[it]
         # matrix[int(source_id)+1, int(target_id)+1] = float(probability)
 
+    # root aligns to root
     src_indices.append(0)
     trg_indices.append(0)
     probabilities.append(1.0)

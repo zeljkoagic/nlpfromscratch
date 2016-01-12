@@ -90,33 +90,29 @@ def get_next_sentence_and_graph(conll_file_handle):
     :return: <list of tokens, sentence graph, parts of speech, dependency labels> 4-tuple
     """
     next_sentence = []
-    graph_parts = []
     parts_of_speech = []
     dependency_labels = []
-
-    line = conll_file_handle.readline().strip().split()
-
-    while line:
-        next_sentence.append(ConllToken.from_list(line[:8]))
-        graph_parts.append(line[8:])
-        parts_of_speech.append(line[3])
-        dependency_labels.append(line[7])
-        line = conll_file_handle.readline().strip().split()
-
-    # the graph has to be stored after loading the sentence
-    # as we don't know the sentence length before
     head_indices = []
     dep_indices = []
     confidences = []
 
+    line = conll_file_handle.readline().strip().split()
+
     it = 0
-    for part in graph_parts:
+    while line:
         it += 1
-        for item in part:
-            head, confidence = item.split(":")
+        next_sentence.append(ConllToken.from_list(line[:8]))
+        graph_parts = [item.split(":") for item in line[8:]]
+
+        for part in graph_parts:  # TODO
+            head, confidence = part
             head_indices.append(int(head))
             dep_indices.append(it)
             confidences.append(float(confidence))
+
+        parts_of_speech.append(line[3])
+        dependency_labels.append(line[7])
+        line = conll_file_handle.readline().strip().split()
 
     next_graph = sparse.coo_matrix((confidences, (dep_indices, head_indices)),
                                    shape=(len(next_sentence) + 1, len(next_sentence) + 1))
