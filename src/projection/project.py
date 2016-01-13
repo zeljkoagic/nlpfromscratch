@@ -76,17 +76,22 @@ for target_sentence in conll.sentences(target_file_handle, sentence_getter=conll
     if args.stop_after and int(args.stop_after) == target_sid_counter:
         break
 
-    # target sentence found in sentence alignment
+    # target sentence found in sentence alignment, get source sentence id and confidence
     if target_sid_counter in sentence_alignments:
-        # get source id and confidence
         source_sid, sal_confidence = sentence_alignments[target_sid_counter]
-        # get word alignments for that sentence pair
-        walign_pairs, walign_probs = word_alignments[walign_counter]
-        walign_counter += 1
+    else:
+        for _ in target_sentence:  # if not found, just print out dummy to maintain the number of lines/sentences
+            print("_")
+        print()
+        target_sid_counter += 1
+        continue
 
-    # if target sentence unaligned or word alignments empty
-    if target_sid_counter not in sentence_alignments or len(walign_pairs) == 0:
-        for _ in target_sentence:
+    # get word alignments for that sentence pair
+    walign_pairs, walign_probs = word_alignments[walign_counter]
+    walign_counter += 1
+
+    if len(walign_pairs) == 0:
+        for _ in target_sentence:  # if not found, just print out dummy to maintain the number of lines/sentences
             print("_")
         print()
         target_sid_counter += 1
