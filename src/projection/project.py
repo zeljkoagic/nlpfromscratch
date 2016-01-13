@@ -26,7 +26,7 @@ normalizers = {"softmax": None,
 parser = argparse.ArgumentParser(description="Projects dependency trees from source to target via word alignments.")
 
 parser.add_argument("--source", required=True, help="source CoNLL file", type=Path)
-parser.add_argument("--target", required=True, help="target CoNLL file")
+parser.add_argument("--target", required=True, help="target CoNLL file", type=Path)
 parser.add_argument("--word_alignment", required=True, help="word alignments file")
 parser.add_argument("--sentence_alignment", required=True, help="sentence alignments file")
 parser.add_argument("--norm_before", required=True, choices=normalizers.keys(), help="normalization before projection")
@@ -40,13 +40,15 @@ parser.add_argument("--temperature", required=False, help="softmax temperature",
 
 args = parser.parse_args()
 
-normalizers['softmax'] = partial(norm.softmax, temperature=args.temperature)
+source_language_name = args.source.stem.split(".", 1)[0]  # needed to flag the outputs
 
-source_language_name = args.source.stem.split(".", 1)[0]
-
+# set the normalizers
+normalizers['softmax'] = partial(norm.softmax, temperature=args.temperature)  # we get temp from the command line
 normalize_before_projection = normalizers[args.norm_before]
 normalize_after_projection = normalizers[args.norm_after]
 
+# we don't normalize before projection if predicted trees
+# are projected instead of full graphs
 if args.trees:
     normalize_before_projection = normalizers["identity"]
 
@@ -56,12 +58,12 @@ source_data_getters = {0: conll.get_next_sentence_and_graph,
 
 get_source_data = source_data_getters[args.trees]
 
-# TODO get the sentence alignments, word alignments, and source-target similarity estimate
+# get the sentence alignments, word alignments, and source-target similarity estimate
 sentence_alignments, word_alignments, similarity = align.read_alignments(args.sentence_alignment, args.word_alignment)
 
 # get the source and target conll file handlers
 source_file_handle = args.source.open()
-target_file_handle = open(args.target)
+target_file_handle = args.target.open()
 
 # target sentence id counter
 target_sid_counter = -1
@@ -118,6 +120,7 @@ for target_sentence in conll.sentences(target_file_handle, sentence_getter=conll
     m = len(source_sentence)
     n = len(target_sentence)
 
+    # the +1 in the dimensions accommodates for the pseudo-roots
     A_sparse = align.get_alignment_matrix((m + 1, n + 1), walign_pairs, walign_probs, args.binary)
     T = project.project_dependencies_faster(S_sparse, A_sparse)  # We now use sparse matrices
 
@@ -133,6 +136,7 @@ for target_sentence in conll.sentences(target_file_handle, sentence_getter=conll
     # print the results
     for token in target_sentence:
         # get the POS projections for the current target token
+        # if there are no projections, propagate the dummy tag
         projected_tags = P.get(token.idx) if token.idx in P else Counter({"_": 0})
         # projected_labels = L.get(token.idx) if token.idx in L else Counter({"_": 0})
 

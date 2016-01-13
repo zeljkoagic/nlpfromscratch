@@ -1,6 +1,9 @@
 import numpy as np
 
 class CooMatrix:
+    """
+    Simple reimplementation of scipy.sparse.coo_matrix for convenience.
+    """
     def __init__(self, row, col, data, shape):
         self.row = np.array(row, dtype=np.int32)
         self.col = np.array(col, dtype=np.int32)

@@ -27,7 +27,7 @@ def read_alignments(filename_sa, filename_wa):
         confidence = float(sa_items[2])
         saligns[trg_id] = [src_id, confidence]
 
-        if len(wa_items) != 0:
+        if wa_items:
             pairs = [pair.split("-") for pair in wa_items[::2]]
             probabilities = [float(p) for p in wa_items[1::2]]
             waligns[(trg_id, src_id)] = (pairs, probabilities)
@@ -63,7 +63,7 @@ def get_alignment_matrix(shape, pairs, probabilities, binary=False):
         # probability = probabilities[it]
         # matrix[int(source_id)+1, int(target_id)+1] = float(probability)
 
-    # root aligns to root
+    # root always aligns to root, accommodate for that
     src_indices.append(0)
     trg_indices.append(0)
     probabilities.append(1.0)
@@ -73,8 +73,6 @@ def get_alignment_matrix(shape, pairs, probabilities, binary=False):
 
     matrix = sparse.coo_matrix((probabilities, (src_indices, trg_indices)), shape=shape)
 
-    # matrix[0, 0] = 1.0  # source root always aligns to target root
-    # return np.where(matrix == 0, [0.5], matrix)
     return matrix.tocsr()
 
 
