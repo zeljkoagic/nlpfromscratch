@@ -79,18 +79,11 @@ for target_sentence in conll.sentences(target_file_handle, sentence_getter=conll
     # target sentence found in sentence alignment, get source sentence id and confidence
     if target_sid_counter in sentence_alignments:
         source_sid, sal_confidence = sentence_alignments[target_sid_counter]
-    else:
-        for _ in target_sentence:  # if not found, just print out dummy to maintain the number of lines/sentences
-            print("_")
-        print()
-        target_sid_counter += 1
-        continue
+        # get word alignments for that sentence pair
+        walign_pairs, walign_probs = word_alignments[walign_counter]
+        walign_counter += 1
 
-    # get word alignments for that sentence pair
-    walign_pairs, walign_probs = word_alignments[walign_counter]
-    walign_counter += 1
-
-    if len(walign_pairs) == 0:
+    if (target_sid_counter not in sentence_alignments) or (len(walign_probs) == 0):
         for _ in target_sentence:  # if not found, just print out dummy to maintain the number of lines/sentences
             print("_")
         print()
