@@ -102,13 +102,13 @@ for target_sentence in conll.sentences(target_file_handle, sentence_getter=conll
     source_sentence, S_sparse, source_pos_tags = source_sentences[source_sid] # get_source_data(source_file_handle)
 
     # source matrix normalization
-    S = np.full(S_sparse.shape, fill_value=np.nan)
-    S[S_sparse.row, S_sparse.col] = S_sparse.data
-    S = normalize_before_projection(S)
-    non_nan_mask = np.argwhere(~np.isnan(S))
-    rows = non_nan_mask[:, 0]
-    cols = non_nan_mask[:, 1]
-    S_sparse = CooMatrix(rows, cols, S[rows, cols], S.shape)
+    # S = np.full(S_sparse.shape, fill_value=np.nan)
+    # S[S_sparse.row, S_sparse.col] = S_sparse.data
+    # S = normalize_before_projection(S)
+    # non_nan_mask = np.argwhere(~np.isnan(S))
+    # rows = non_nan_mask[:, 0]
+    # cols = non_nan_mask[:, 1]
+    # S_sparse = CooMatrix(rows, cols, S[rows, cols], S.shape)
 
     # project parts of speech and dependency labels
     P = align.project_token_labels(source_pos_tags, walign_pairs, walign_probs, args.with_pp)

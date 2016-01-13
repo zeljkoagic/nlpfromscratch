@@ -73,6 +73,7 @@ def sentences(conll_file_handle, sentence_getter):
             break
         yield next_sentence
 
+
 def get_next_sentence_and_graph(conll_file_handle):
     """Reads next sentence, graph, and POS-tags from augmented CoNLL file.
 
