@@ -149,11 +149,10 @@ def project_token_labels(source_labels, wa_pairs, wa_probs, weigh_votes=True):
     """
     label_votes = defaultdict(Counter)  # dictionary of counters
 
-    print(source_labels, wa_probs)
+    print(source_labels, wa_pairs)
 
     it = 0
-    for pair in wa_pairs:
-        sid, tid = pair
+    for sid, tid in wa_pairs:
         if weigh_votes:
             label_votes[int(tid) + 1].update({source_labels[int(sid)]: wa_probs[it]})
         else:
