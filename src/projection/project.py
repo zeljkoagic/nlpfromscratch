@@ -85,7 +85,7 @@ for target_sentence in conll.sentences(target_file_handle, sentence_getter=conll
         walign_counter += 1
 
     # if target sentence unaligned or word alignments empty
-    if target_sid_counter not in sentence_alignments or walign_pairs is None:
+    if target_sid_counter not in sentence_alignments or len(walign_pairs) == 0:
         for _ in target_sentence:
             print("_")
         print()
