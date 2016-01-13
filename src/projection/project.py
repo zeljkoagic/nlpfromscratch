@@ -78,9 +78,15 @@ for target_sentence in conll.sentences(target_file_handle, sentence_getter=conll
 
     # target sentence found in sentence alignment
     if target_sid_counter in sentence_alignments:
+        # get source id and confidence
         source_sid, sal_confidence = sentence_alignments[target_sid_counter]
-    else:
-        for _ in target_sentence:  # if not found, just print out dummy to maintain the number of lines/sentences
+        # get word alignments for that sentence pair
+        walign_pairs, walign_probs = word_alignments[walign_counter]
+        walign_counter += 1
+
+    # if target sentence unaligned or word alignments empty
+    if target_sid_counter not in sentence_alignments or walign_pairs is None:
+        for _ in target_sentence:
             print("_")
         print()
         target_sid_counter += 1
@@ -94,7 +100,8 @@ for target_sentence in conll.sentences(target_file_handle, sentence_getter=conll
     # check if sentence ids match
     assert source_sid_counter == source_sid
 
-    # now that the sentence ids match, get the sentence, POS, and graph from the source
+    # now that the sentence ids match and word alignments are in place,
+    # get the sentence, POS, and graph from the source
     source_sentence, S_sparse, source_pos_tags = get_source_data(source_file_handle)
 
     # source and target sentences are retrieved, increment counters
@@ -109,10 +116,6 @@ for target_sentence in conll.sentences(target_file_handle, sentence_getter=conll
     rows = non_nan_mask[:, 0]
     cols = non_nan_mask[:, 1]
     S_sparse = CooMatrix(rows, cols, S[rows, cols], S.shape)
-
-    # get word alignments for that sentence pair
-    walign_pairs, walign_probs = word_alignments[walign_counter]
-    walign_counter += 1
 
     # project parts of speech and dependency labels
     P = align.project_token_labels(source_pos_tags, walign_pairs, walign_probs, args.with_pp)
