@@ -4,56 +4,39 @@ from collections import defaultdict, Counter
 from scipy import sparse
 
 
-def read_sentence_alignments(filename):
-    """Reads hunalign-style sentence alignments, and stores them in a dictionary. Sentence alignments are 1:1.
+def read_alignments(filename_sa, filename_wa):
+    """Reads sentence alignments and word alignments for a given source-target language pair.
+    The alignments are paired through sentence ids.
 
-    :param filename the sentence alignments file
-    :return: a source sentence id-indexed dictionary of two-item lists, src_id -> [trg_id, confidence]
+    :param filename_sa: sentence alignment filename, hunalign format
+    :param filename_wa: word alignment filename, efmaral/fast_align format
+    :return: dictionaries of sentence and word alignments, and the language similarity estimate
     """
     saligns = defaultdict(list)
-
-    for line in open(filename):
-
-        line = line.strip()
-        line = line.split()
-
-        if len(line) == 3:
-            src_id = int(line[0])
-            trg_id = int(line[1])
-            confidence = float(line[2])
-            saligns[trg_id] = [src_id, confidence]
-
-    return saligns
-
-
-def read_word_alignments(filename):
-    """Reads fast-align word alignments.
-
-    :param filename: fast_align-formatted word alignments file
-    :return: a list of <word pairs, probabilities> pairs for all aligned sentences, and the language similarity estimate
-    """
-    waligns = []
+    waligns = defaultdict(list)
     similarity = 0
     count = 0
 
-    for line in open(filename):
+    for line_sa, line_wa in zip(open(filename_sa), open(filename_wa)):
 
-        alignment_items = line.strip().split()
+        sa_items = line_sa.strip().split()
+        wa_items = line_wa.strip().split()
 
-        if alignment_items:
-            # account for the alignment file format
-            pairs = [pair.split("-") for pair in alignment_items[::2]]
-            probabilities = [float(p) for p in alignment_items[1::2]]
-            waligns.append((pairs, probabilities))
+        src_id = int(sa_items[0])
+        trg_id = int(sa_items[1])
+        confidence = float(sa_items[2])
+        saligns[trg_id] = [src_id, confidence]
+
+        if len(wa_items) != 0:
+            pairs = [pair.split("-") for pair in wa_items[::2]]
+            probabilities = [float(p) for p in wa_items[1::2]]
+            waligns[(trg_id, src_id)] = (pairs, probabilities)
             count += len(probabilities)
             similarity += sum(probabilities)
+        else:
+            waligns[(trg_id, src_id)] = None  # for efmaral's empty alignment lines
 
-            assert len(probabilities) == len(pairs), "Prob-pair mismatch"
-
-        else:  # take also empty lines, due to efmaral
-            waligns.append(([None, None], [None]))
-
-    return waligns, similarity / count
+    return saligns, waligns, similarity / count
 
 
 def get_alignment_matrix(shape, pairs, probabilities, binary=False):

@@ -56,22 +56,25 @@ source_data_getters = {0: conll.get_next_sentence_and_graph,
 
 get_source_data = source_data_getters[args.trees]
 
-# get the sentence alignments
-sentence_alignments = align.read_sentence_alignments(args.sentence_alignment)
-
-# get the word alignments and source-target similarity
-word_alignments, similarity = align.read_word_alignments(args.word_alignment)
+# TODO get the sentence alignments, word alignments, and source-target similarity estimate
+sentence_alignments, word_alignments, similarity = align.read_alignments(args.sentence_alignment, args.word_alignment)
 
 # get the source and target conll file handlers
 source_file_handle = args.source.open()
 target_file_handle = open(args.target)
 
-# sentence counters, word alignment counter for matching to sentence alignments
-source_sid_counter = 0
-target_sid_counter = 0
-walign_counter = 0
+# target sentence id counter
+target_sid_counter = -1
+
+# read all source sentences
+source_sentences = []
+for source_sentence in conll.sentences(source_file_handle, sentence_getter=get_source_data):
+    source_sentences.append(source_sentence)
 
 for target_sentence in conll.sentences(target_file_handle, sentence_getter=conll.get_next_sentence):
+
+    # used for pivoting the alignments
+    target_sid_counter += 1
 
     if args.stop_after and int(args.stop_after) == target_sid_counter:
         break
@@ -79,32 +82,24 @@ for target_sentence in conll.sentences(target_file_handle, sentence_getter=conll
     # target sentence found in sentence alignment, get source sentence id and confidence
     if target_sid_counter in sentence_alignments:
         source_sid, sal_confidence = sentence_alignments[target_sid_counter]
-    else:
-        for _ in target_sentence:  # if not found, just print out dummy to maintain the number of lines/sentences
+
+    # if sentences are unpairable, just print out dummy to maintain the number of lines/sentences
+    if target_sid_counter not in sentence_alignments \
+            or (target_sid_counter, source_sid) not in word_alignments \
+            or word_alignments[(target_sid_counter, source_sid)] is None:
+        for _ in target_sentence:
             print("_")
         print()
-        target_sid_counter += 1
         continue
 
-    # skip source and target sentences that are not in the sentence alignments
-    while source_sid_counter != source_sid:
-        _ = conll.get_next_sentence_and_graph(source_file_handle)
-        source_sid_counter += 1
+    # print(word_alignments[(target_sid_counter, source_sid)], file=sys.stderr)
 
-    # check if sentence ids match
-    assert source_sid_counter == source_sid
+    # get the word alignments and probabilities for sentence pair
+    walign_pairs, walign_probs = word_alignments[(target_sid_counter, source_sid)]
 
     # now that the sentence ids match and word alignments are in place,
     # get the sentence, POS, and graph from the source
-    source_sentence, S_sparse, source_pos_tags = get_source_data(source_file_handle)
-
-    # source and target sentences are retrieved, increment counters
-    source_sid_counter += 1
-    target_sid_counter += 1
-
-    # get word alignments for that sentence pair
-    walign_pairs, walign_probs = word_alignments[walign_counter]
-    walign_counter += 1
+    source_sentence, S_sparse, source_pos_tags = source_sentences[source_sid] # get_source_data(source_file_handle)
 
     # source matrix normalization
     S = np.full(S_sparse.shape, fill_value=np.nan)
@@ -147,4 +142,4 @@ for target_sentence in conll.sentences(target_file_handle, sentence_getter=conll
                               " ".join(map(str, T[token.idx]))))
     print()
 
-print("Execution time: %s sec" % (time.time() - start_time), file=sys.stderr)
+print(len(source_sentences), (time.time() - start_time), file=sys.stderr)

@@ -69,10 +69,9 @@ def sentences(conll_file_handle, sentence_getter):
     """
     while True:
         next_sentence = sentence_getter(conll_file_handle)
-        if not next_sentence:
+        if not next_sentence or not next_sentence[0]:  # subscript accommodates for getters returning tuples
             break
         yield next_sentence
-
 
 def get_next_sentence_and_graph(conll_file_handle):
     """Reads next sentence, graph, and POS-tags from augmented CoNLL file.
