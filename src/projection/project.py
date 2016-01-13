@@ -82,6 +82,7 @@ for target_sentence in conll.sentences(target_file_handle, sentence_getter=conll
         # get word alignments for that sentence pair
         walign_pairs, walign_probs = word_alignments[walign_counter]
         walign_counter += 1
+        print(walign_probs, file=sys.stderr)
 
     if (target_sid_counter not in sentence_alignments) or (len(walign_probs) == 0):
         for _ in target_sentence:  # if not found, just print out dummy to maintain the number of lines/sentences
