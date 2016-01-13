@@ -142,4 +142,4 @@ for target_sentence in conll.sentences(target_file_handle, sentence_getter=conll
                               " ".join(map(str, T[token.idx]))))
     print()
 
-print(len(source_sentences), (time.time() - start_time), file=sys.stderr)
+print("Execution time:", (time.time() - start_time), file=sys.stderr)
