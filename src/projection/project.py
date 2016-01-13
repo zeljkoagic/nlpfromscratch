@@ -84,7 +84,7 @@ for target_sentence in conll.sentences(target_file_handle, sentence_getter=conll
         walign_counter += 1
         print(walign_probs, file=sys.stderr)
 
-    if (target_sid_counter not in sentence_alignments) or (len(walign_probs) == 0):
+    if (target_sid_counter not in sentence_alignments) or (walign_pairs is None):
         for _ in target_sentence:  # if not found, just print out dummy to maintain the number of lines/sentences
             print("_")
         print()
