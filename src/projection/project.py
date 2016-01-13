@@ -71,8 +71,6 @@ source_sid_counter = 0
 target_sid_counter = 0
 walign_counter = 0
 
-assert len(word_alignments) == len(sentence_alignments), "wtf"
-
 for target_sentence in conll.sentences(target_file_handle, sentence_getter=conll.get_next_sentence):
 
     if args.stop_after and int(args.stop_after) == target_sid_counter:

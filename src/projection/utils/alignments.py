@@ -51,7 +51,7 @@ def read_word_alignments(filename):
             assert len(probabilities) == len(pairs), "Prob-pair mismatch"
 
         else:  # take also empty lines, due to efmaral
-            waligns.append((None, None))
+            waligns.append(([None, None], [None]))
 
     return waligns, similarity / count
 
