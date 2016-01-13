@@ -79,13 +79,7 @@ for target_sentence in conll.sentences(target_file_handle, sentence_getter=conll
     # target sentence found in sentence alignment, get source sentence id and confidence
     if target_sid_counter in sentence_alignments:
         source_sid, sal_confidence = sentence_alignments[target_sid_counter]
-        # get word alignments for that sentence pair
-        walign_pairs, walign_probs = word_alignments[walign_counter]
-        walign_counter += 1
-        print(walign_probs, file=sys.stderr)
-
-    if (target_sid_counter not in sentence_alignments) or (walign_pairs is None):
-        assert walign_pairs is None and target_sid_counter in sentence_alignments, "fuck"
+    else:
         for _ in target_sentence:  # if not found, just print out dummy to maintain the number of lines/sentences
             print("_")
         print()
@@ -107,6 +101,10 @@ for target_sentence in conll.sentences(target_file_handle, sentence_getter=conll
     # source and target sentences are retrieved, increment counters
     source_sid_counter += 1
     target_sid_counter += 1
+
+    # get word alignments for that sentence pair
+    walign_pairs, walign_probs = word_alignments[walign_counter]
+    walign_counter += 1
 
     # source matrix normalization
     S = np.full(S_sparse.shape, fill_value=np.nan)
