@@ -27,7 +27,7 @@ def read_alignments(filename_sa, filename_wa):
         saligns[trg_id] = [src_id, confidence]
 
         if wa_items:
-            pairs = [pair.split("-") for pair in wa_items[::2]]
+            pairs = [pair.split("-") for pair in wa_items[::2]]  # TODO Should be cast as int here, not multiply elsewhere!
             probabilities = [float(p) for p in wa_items[1::2]]
             waligns[(trg_id, src_id)] = (pairs, probabilities)
             count += len(probabilities)
@@ -56,8 +56,8 @@ def get_alignment_matrix(shape, pairs, probabilities, binary=False):
 
     for it in range(len(pairs)):
         source_id, target_id = pairs[it]
-        src_indices.append(source_id + 1)  # word alignments are 0-indexed, here we move to CoNLL indexing (+1)
-        trg_indices.append(target_id + 1)
+        src_indices.append(int(source_id) + 1)  # word alignments are 0-indexed, here we move to CoNLL indexing (+1)
+        trg_indices.append(int(target_id) + 1)
 
     # root always aligns to root, accommodate for that
     src_indices.append(0)
