@@ -85,7 +85,8 @@ for target_sentence in conll.sentences(target_file_handle, sentence_getter=conll
     if target_sid_counter in sentence_alignments:
         source_sid, sal_confidence = sentence_alignments[target_sid_counter]
 
-    # if sentences are unpairable, just print out dummy to maintain the number of lines/sentences
+    # if target sentence unmatched, just print out dummy to maintain the number of lines/sentences
+    # unmatched = not in alignment or alignment empty
     if target_sid_counter not in sentence_alignments \
             or (target_sid_counter, source_sid) not in word_alignments \
             or word_alignments[(target_sid_counter, source_sid)] is None:
@@ -93,8 +94,6 @@ for target_sentence in conll.sentences(target_file_handle, sentence_getter=conll
             print("_")
         print()
         continue
-
-    # print(word_alignments[(target_sid_counter, source_sid)], file=sys.stderr)
 
     # get the word alignments and probabilities for sentence pair
     walign_pairs, walign_probs = word_alignments[(target_sid_counter, source_sid)]

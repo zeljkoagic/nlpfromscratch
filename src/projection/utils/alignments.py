@@ -1,6 +1,5 @@
-from __future__ import division
-import numpy as np
 from collections import defaultdict, Counter
+import numpy as np
 from scipy import sparse
 
 
@@ -52,7 +51,6 @@ def get_alignment_matrix(shape, pairs, probabilities, binary=False):
     if len(pairs) != len(probabilities):
         raise Exception("Mismatch in sizes of pairs (%s) and probabilities (%s)" % (len(pairs), len(probabilities)))
 
-    # matrix = np.ones(shape) * np.nan  # change here for non-zero default
     src_indices = []
     trg_indices = []
 
@@ -60,8 +58,6 @@ def get_alignment_matrix(shape, pairs, probabilities, binary=False):
         source_id, target_id = pairs[it]
         src_indices.append(source_id)
         trg_indices.append(target_id)
-        # probability = probabilities[it]
-        # matrix[int(source_id)+1, int(target_id)+1] = float(probability)
 
     # root always aligns to root, accommodate for that
     src_indices.append(0)
@@ -94,7 +90,6 @@ def project_dependencies_to_target(S, A):  # TODO Matrix S must be normalized, i
             for h in range(m_plus_one):
                 np.dot(A[d].reshape(-1, 1), A[h].reshape(1, -1), out=T_edge)
                 T_edge *= S[d, h]  # multiply by confidence of edge h->d from the source parse
-                # T += T_edge
                 np.fmax(T, T_edge, out=T)
     return T
 
