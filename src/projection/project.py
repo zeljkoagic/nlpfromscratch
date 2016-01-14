@@ -31,7 +31,6 @@ parser.add_argument("--word_alignment", required=True, help="word alignments fil
 parser.add_argument("--sentence_alignment", required=True, help="sentence alignments file")
 parser.add_argument("--norm_before", required=True, choices=normalizers.keys(), help="normalization before projection")
 parser.add_argument("--norm_after", required=True, choices=normalizers.keys(), help="normalization after projection")
-parser.add_argument('--with_pp', required=True, choices=[0, 1], help="project POS with alignment probabilities instead unit votes", type=int)
 parser.add_argument('--trees', required=True, choices=[0, 1], help="project dependency trees instead of weight matrices", type=int)
 parser.add_argument('--binary', required=True, choices=[0, 1], help="use binary alignments instead of alignment probabilities", type=int)
 parser.add_argument('--use_similarity', action='store_true', help="use word alignment-derived language similarity proxy")
@@ -112,8 +111,8 @@ for target_sentence in conll.sentences(target_file_handle, sentence_getter=conll
     # S_sparse = CooMatrix(rows, cols, S[rows, cols], S.shape)
 
     # project parts of speech and dependency labels
-    P = align.project_token_labels(source_pos_tags, walign_pairs, walign_probs, args.with_pp)
-    # L = align.project_token_labels(source_dep_labels, walign_pairs, walign_probs, args.with_pp)
+    P = align.project_token_labels(source_pos_tags, walign_pairs, walign_probs)
+    # L = align.project_token_labels(source_dep_labels, walign_pairs, walign_probs)
 
     # project the dependencies from source to target
     m = len(source_sentence)

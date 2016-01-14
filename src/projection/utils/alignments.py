@@ -94,7 +94,7 @@ def project_dependencies_to_target(S, A):  # TODO Matrix S must be normalized, i
     return T
 
 
-def project_token_labels(source_labels, wa_pairs, wa_probs, weigh_votes=True):
+def project_token_labels(source_labels, wa_pairs, wa_probs):
     """Projects the token labels from source to target tokens in a sentence.
 
     :param source_labels: list of source labels ordered by source token id
@@ -107,10 +107,7 @@ def project_token_labels(source_labels, wa_pairs, wa_probs, weigh_votes=True):
 
     it = 0
     for sid, tid in wa_pairs:
-        if weigh_votes:
-            label_votes[int(tid) + 1].update({source_labels[int(sid)]: wa_probs[it]})
-        else:
-            label_votes[int(tid) + 1].update({source_labels[int(sid)]: 1})
+        label_votes[int(tid) + 1].update({source_labels[int(sid)]: wa_probs[it]})
         it += 1
 
     return label_votes
