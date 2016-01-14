@@ -27,7 +27,7 @@ def read_alignments(filename_sa, filename_wa):
         saligns[trg_id] = [src_id, confidence]
 
         if wa_items:
-            pairs = [(int(sid), int(tid)) for sid, tid in pair.split("-") for pair in wa_items[::2]]
+            pairs = [[(int(sid), int(tid)) for sid, tid in pair.split("-")] for pair in wa_items[::2]]
             probabilities = [float(p) for p in wa_items[1::2]]
             waligns[(trg_id, src_id)] = (pairs, probabilities)
             count += len(probabilities)
