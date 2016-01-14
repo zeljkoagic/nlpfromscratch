@@ -46,6 +46,9 @@ normalizers['softmax'] = partial(norm.softmax, temperature=args.temperature)  # 
 normalize_before_projection = normalizers[args.norm_before]
 normalize_after_projection = normalizers[args.norm_after]
 
+assert args.norm_before == "standardize", "standardize!"
+assert args.norm_after == "identity", "thou shalt not normalize after projection!"
+
 # we don't normalize before projection if predicted trees
 # are projected instead of full graphs
 if args.trees:
@@ -100,6 +103,7 @@ for target_sentence in conll.sentences(target_file_handle, sentence_getter=conll
     # now that the sentence ids match and word alignments are in place,
     # get the sentence, POS, and graph from the source
     source_sentence, S_sparse, source_pos_tags = source_sentences[source_sid]  # get_source_data(source_file_handle)
+    S_sparse.standardize()
 
     # source matrix normalization
     # S = np.full(S_sparse.shape, fill_value=np.nan)

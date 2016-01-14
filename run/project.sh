@@ -20,7 +20,7 @@ for corpus in bible watchtower; do
                                     "--target /home/bplank/parse-holy-data/data/2project/${corpus}/$target.2proj.conll" \
                                     "--word_alignment /home/bplank/preprocess-holy-data/data/walign/${source}-${target}.$corpus.$aligner.reverse.wal" \
                                     "--sentence_alignment /home/bplank/preprocess-holy-data/data/salign/${source}-${target}.$corpus.sal" \
-                                    "--norm_before standardize --norm_after softmax --binary $binary --trees $trees" \
+                                    "--norm_before standardize --norm_after identity --binary $binary --trees $trees" \
                                     "--stop_after $stop --use_similarity $similarity" \
                                     "1> $HOME/data/projections/${source}-${target}.$corpus.$parser.trees_${trees}.binary_${binary}.with_pp_${with_pp}.$aligner.proj" \
                                     "2> $HOME/data/logs/${source}-${target}.$corpus.$parser.trees_${trees}.binary_${binary}.with_pp_${with_pp}.$aligner.proj.log" \

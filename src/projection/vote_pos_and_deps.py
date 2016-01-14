@@ -12,6 +12,7 @@ import utils.score as score
 from dependency_decoding import chu_liu_edmonds
 import warnings
 import math
+import utils.normalize as norm
 
 
 def add_root_row(tensor):
@@ -145,7 +146,8 @@ for lines in zip(*vote_handles):
             current_sentence_tensor = add_root_row(np.array(current_sentence_tensor))
 
             # unify the source language matrices into a single a matrix
-            current_sentence_matrix = vote_weight_matrix(current_sentence_tensor)
+            # first we sum, then per-row normalize using softmax
+            current_sentence_matrix = norm.softmax(vote_weight_matrix(current_sentence_tensor))
             eliminate_all_nan_rows(current_sentence_matrix)
 
             # dump the raw projections into a file, for debug purposes
