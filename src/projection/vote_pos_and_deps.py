@@ -107,7 +107,7 @@ for lines in zip(*vote_handles):
             #for vote in source_label_votes:
             #    label, num = vote.split(":")
             #    source_label_counter.update({label: int(num)})
-            
+
             # add single source counts to the overall pool
             overall_pos_votes.update(source_pos_counter)
             # overall_label_votes.update(source_label_counter)
