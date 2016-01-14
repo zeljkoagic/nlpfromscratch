@@ -54,7 +54,7 @@ args = parser.parse_args()
 
 # TODO
 pos_vote_casts = {1: math.ceil,
-                  0: float}
+                  0: lambda x: x}
 pos_vote_caster = pos_vote_casts[args.unit_vote_pos]
 
 target_file_handle = args.target.open()
@@ -106,7 +106,7 @@ for lines in zip(*vote_handles):
 
             for vote in source_pos_votes:
                 pos, num = vote.split(":")
-                source_pos_counter.update({pos: pos_vote_caster(num)})
+                source_pos_counter.update({pos: pos_vote_caster(float(num))})
 
             #for vote in source_label_votes:
             #    label, num = vote.split(":")
