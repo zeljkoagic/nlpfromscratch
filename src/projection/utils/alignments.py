@@ -56,8 +56,8 @@ def get_alignment_matrix(shape, pairs, probabilities, binary=False):
 
     for it in range(len(pairs)):
         source_id, target_id = pairs[it]
-        src_indices.append(source_id)
-        trg_indices.append(target_id)
+        src_indices.append(source_id + 1)  # word alignments are 0-indexed, here we move to CoNLL indexing (+1)
+        trg_indices.append(target_id + 1)
 
     # root always aligns to root, accommodate for that
     src_indices.append(0)
