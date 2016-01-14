@@ -33,7 +33,7 @@ parser.add_argument("--norm_before", required=True, choices=normalizers.keys(), 
 parser.add_argument("--norm_after", required=True, choices=normalizers.keys(), help="normalization after projection")
 parser.add_argument('--trees', required=True, choices=[0, 1], help="project dependency trees instead of weight matrices", type=int)
 parser.add_argument('--binary', required=True, choices=[0, 1], help="use binary alignments instead of alignment probabilities", type=int)
-parser.add_argument('--use_similarity', action='store_true', help="use word alignment-derived language similarity proxy")
+parser.add_argument('--use_similarity', required=True, choices=[0, 1], help="use word alignment-derived language similarity proxy", type=int)
 parser.add_argument("--stop_after", required=False, help="stop after n sentences")
 parser.add_argument("--temperature", required=False, help="softmax temperature", type=float, default=1.0)
 
