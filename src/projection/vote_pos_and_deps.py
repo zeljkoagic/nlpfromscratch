@@ -51,6 +51,11 @@ parser.add_argument('--decode', action='store_true', help="perform CLE decoding"
 
 args = parser.parse_args()
 
+# TODO
+pos_vote_casts = {1: int,
+                  0: float}
+pos_vote_caster = pos_vote_casts[args.unit_vote_pos]
+
 target_file_handle = args.target.open()
 
 token_count = 0
@@ -100,9 +105,7 @@ for lines in zip(*vote_handles):
 
             for vote in source_pos_votes:
                 pos, num = vote.split(":")
-                if args.unit_vote_pos:
-                    num = 1.0
-                source_pos_counter.update({pos: float(num)})
+                source_pos_counter.update({pos: pos_vote_caster(num)})
 
             #for vote in source_label_votes:
             #    label, num = vote.split(":")
