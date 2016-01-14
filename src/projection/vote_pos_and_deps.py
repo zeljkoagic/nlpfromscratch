@@ -11,6 +11,7 @@ from pathlib import Path
 import utils.score as score
 from dependency_decoding import chu_liu_edmonds
 import warnings
+import math
 
 
 def add_root_row(tensor):
@@ -52,7 +53,7 @@ parser.add_argument('--decode', action='store_true', help="perform CLE decoding"
 args = parser.parse_args()
 
 # TODO
-pos_vote_casts = {1: int,
+pos_vote_casts = {1: math.ceil,
                   0: float}
 pos_vote_caster = pos_vote_casts[args.unit_vote_pos]
 
