@@ -149,3 +149,4 @@ for target_sentence in conll.sentences(target_file_handle, sentence_getter=conll
     print()
 
 print("Execution time:", (time.time() - start_time), file=sys.stderr)
+    
