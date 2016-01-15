@@ -103,7 +103,8 @@ for target_sentence in conll.sentences(target_file_handle, sentence_getter=conll
     # now that the sentence ids match and word alignments are in place,
     # get the sentence, POS, and graph from the source
     source_sentence, S_sparse, source_pos_tags = source_sentences[source_sid]  # get_source_data(source_file_handle)
-    S_sparse.standardize()
+    if not args.trees:
+        S_sparse.standardize()
 
     # source matrix normalization
     # S = np.full(S_sparse.shape, fill_value=np.nan)
@@ -149,4 +150,3 @@ for target_sentence in conll.sentences(target_file_handle, sentence_getter=conll
     print()
 
 print("Execution time:", (time.time() - start_time), file=sys.stderr)
-    
