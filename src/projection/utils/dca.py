@@ -343,10 +343,13 @@ def iterateThroughDir_Bible():
     printScores('bible_scores_all', scores)
 
 
-def project(S_sparse, A_sparse):
+def project(S_sparse, A_sparse_1):
     # takes two CooMatrix objects (coo_matrix_nocheck.py), returns projection
     # S_sparse must be just a tree (a single one per column)
     # return a numpy matrix (n+1)x(n+1) first row is all zeroes
+
+    A_sparse = A_sparse_1.tocoo(copy=True)
+
     align_ts, align_st = getAlignmentsSparse(A_sparse)
     stree, depths = makeSourceTreeSparse(S_sparse)
     ttree = [-10] * (A_sparse.shape[1] - 1)  # don't include pseudo-root
