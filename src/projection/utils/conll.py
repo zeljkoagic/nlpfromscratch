@@ -1,4 +1,5 @@
 from utils.coo_matrix_nocheck import CooMatrix
+import numpy as np
 
 
 class ConllToken:
@@ -125,6 +126,35 @@ def get_next_sentence_and_tree(conll_file_handle):
                            shape=(len(next_sentence) + 1, len(next_sentence) + 1))
 
     return next_sentence, next_graph, parts_of_speech
+
+
+def get_next_sentence_and_tree_old(conll_file_handle):
+    """TODO
+    """
+    next_sentence = []
+    next_heads = []
+    parts_of_speech = []
+
+    line = conll_file_handle.readline().strip().split()
+
+    while line:
+        next_sentence.append(ConllToken.from_list(line[:8]))
+        next_heads.append(int(line[6]))
+        parts_of_speech.append(line[3])
+        line = conll_file_handle.readline().strip().split()
+
+    # create graph (n+1 x n+1)
+    next_graph = np.zeros((len(next_sentence) + 1, len(next_sentence) + 1))
+
+    # assign the collected heads to the graph
+    it = 0
+    for head in next_heads:
+        next_graph[it+1][head] = 1.0
+        it += 1
+
+    return next_sentence, next_graph, parts_of_speech
+
+
 
 
 def sentences(conll_file_handle, sentence_getter):
