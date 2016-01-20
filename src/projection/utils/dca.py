@@ -355,7 +355,7 @@ def project(S_sparse, A_sparse_1):
     ttree = [-10] * (A_sparse.shape[1] - 1)  # don't include pseudo-root
     tlength = A_sparse.shape[1] - 1
     hua_et_al_2005_nodummies(align_ts, align_st, depths, stree, ttree)
-    T_matrix = [0] * pow(tlength + 1, 2)
+    T_matrix = np.ones(pow(tlength + 1, 2)) * np.nan
     for x in range(tlength):
         if ttree[x] > -1:
             T_matrix[((x + 1) * (tlength + 1)) + ttree[x]] = 1
