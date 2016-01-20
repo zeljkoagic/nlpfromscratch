@@ -359,7 +359,11 @@ def project(S_sparse, A_sparse_1):
     for x in range(tlength):
         if ttree[x] > -1:
             T_matrix[((x + 1) * (tlength + 1)) + ttree[x]] = 1
-    return np.ndarray(shape=(tlength + 1, tlength + 1), buffer=np.array(T_matrix), dtype=int)
+
+    T_matrix = np.array(T_matrix)
+    T_matrix[T_matrix == 0] = np.nan
+
+    return np.ndarray(shape=(tlength + 1, tlength + 1), buffer=T_matrix, dtype=int)
 
 
 def get_arguments(parser=None):
