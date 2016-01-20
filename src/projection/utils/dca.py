@@ -363,7 +363,7 @@ def project(S_sparse, A_sparse_1):
     T_matrix = np.array(T_matrix)
     T_matrix[T_matrix == 0] = np.nan
 
-    return np.ndarray(shape=(tlength + 1, tlength + 1), buffer=T_matrix, dtype=int)
+    return np.ndarray(shape=(tlength + 1, tlength + 1), buffer=T_matrix, dtype=float)
 
 
 def get_arguments(parser=None):
