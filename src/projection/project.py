@@ -12,6 +12,7 @@ import numpy as np
 import pyximport; pyximport.install()
 import utils.project_deps as project
 from utils.coo_matrix_nocheck import CooMatrix
+import utils.dca as dca
 
 start_time = time.time()  # timing the script
 
@@ -32,6 +33,7 @@ parser.add_argument("--sentence_alignment", required=True, help="sentence alignm
 parser.add_argument("--norm_before", required=True, choices=normalizers.keys(), help="normalization before projection")
 parser.add_argument("--norm_after", required=True, choices=normalizers.keys(), help="normalization after projection")
 parser.add_argument('--trees', required=True, choices=[0, 1], help="project dependency trees instead of weight matrices", type=int)
+parser.add_argument('--dca', required=True, choices=[0, 1], help="project using dca", type=int)
 parser.add_argument('--binary', required=True, choices=[0, 1], help="use binary alignments instead of alignment probabilities", type=int)
 parser.add_argument('--use_similarity', required=True, choices=[0, 1], help="use word alignment-derived language similarity proxy", type=int)
 parser.add_argument("--stop_after", required=False, help="stop after n sentences")
@@ -51,8 +53,14 @@ assert args.norm_after == "identity", "thou shalt not normalize after projection
 
 # we don't normalize before projection if predicted trees
 # are projected instead of full graphs
-if args.trees:
+if args.trees or args.dca:
     normalize_before_projection = normalizers["identity"]
+
+# choose projection approach; moderated by args.dca
+projectors = {0: project.project_dependencies_faster,
+              1: dca.project}
+
+project_dependencies = projectors[args.dca]
 
 # source sentence getter is determined by args.trees
 source_data_getters = {0: conll.get_next_sentence_and_graph,
@@ -125,7 +133,7 @@ for target_sentence in conll.sentences(target_file_handle, sentence_getter=conll
 
     # the +1 in the dimensions accommodates for the pseudo-roots
     A_sparse = align.get_alignment_matrix((m + 1, n + 1), walign_pairs, walign_probs, args.binary)
-    T = project.project_dependencies_faster(S_sparse, A_sparse)  # We now use sparse matrices
+    T = project_dependencies(S_sparse, A_sparse)  # We now use sparse matrices
 
     # normalize the target matrix
     T = normalize_after_projection(T)
