@@ -29,7 +29,7 @@ while True:
     for sentence, tree, _ in sentences_and_trees:  # the last item is the list of POS tags
         votes_graph += tree
 
-    print(votes_graph)
+    # print(votes_graph)
     # run MST to get heads
     decoded_heads, score = chu_liu_edmonds(votes_graph)
 
