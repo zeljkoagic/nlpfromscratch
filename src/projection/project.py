@@ -90,8 +90,8 @@ for source_sentence in conll.sentences(source_file_handle, sentence_getter=get_s
     source_sentences.append(source_sentence)
 
 # load all target gold sentences, if existing (for evaluation purposes)
+target_gold_sentences = []
 if args.target_gold:
-    target_gold_sentences = []
     for target_gold_sentence in conll.sentences(target_gold_handle, sentence_getter=get_source_data):
         target_gold_sentences.append(target_gold_sentence)
 
