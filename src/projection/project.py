@@ -84,6 +84,10 @@ target_file_handle = args.target.open()
 # target sentence id counter
 target_sid_counter = -1
 
+# for intrinsic evaluation
+num_correct = 0
+num_total = 0
+
 # read all source sentences
 source_sentences = []
 for source_sentence in conll.sentences(source_file_handle, sentence_getter=get_source_data):
@@ -161,9 +165,8 @@ for target_sentence in conll.sentences(target_file_handle, sentence_getter=conll
         gold_heads = [token.head for token in target_gold_sentences[target_sid_counter]]
         decoded_heads, _ = chu_liu_edmonds(T)
         decoded_heads = decoded_heads[1:]
-        num_correct = sum([gold_head == decoded_head for gold_head, decoded_head in zip(gold_heads, decoded_heads)])
-        num_total = len(gold_heads)
-        print(num_correct, num_total, file=sys.stderr)
+        num_correct += sum([gold_head == decoded_head for gold_head, decoded_head in zip(gold_heads, decoded_heads)])
+        num_total += len(gold_heads)
 
     # print the results
     for token in target_sentence:
@@ -178,4 +181,4 @@ for target_sentence in conll.sentences(target_file_handle, sentence_getter=conll
                               " ".join(map(str, T[token.idx]))))
     print()
 
-print("Execution time:", (time.time() - start_time), file=sys.stderr)
+print("Execution time:", (time.time() - start_time), "Correct vs. total:", num_correct, num_total, file=sys.stderr)
