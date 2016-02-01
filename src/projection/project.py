@@ -13,6 +13,8 @@ import pyximport; pyximport.install()
 import utils.project_deps as project
 from utils.coo_matrix_nocheck import CooMatrix
 import utils.dca as dca
+from dependency_decoding import chu_liu_edmonds
+from mst import cle
 
 start_time = time.time()  # timing the script
 
@@ -28,6 +30,7 @@ parser = argparse.ArgumentParser(description="Projects dependency trees from sou
 
 parser.add_argument("--source", required=True, help="source CoNLL file", type=Path)
 parser.add_argument("--target", required=True, help="target CoNLL file", type=Path)
+parser.add_argument("--target_gold", required=False, help="gold target CoNLL file", type=Path)
 parser.add_argument("--word_alignment", required=True, help="word alignments file")
 parser.add_argument("--sentence_alignment", required=True, help="sentence alignments file")
 parser.add_argument("--norm_before", required=True, choices=normalizers.keys(), help="normalization before projection")
@@ -40,6 +43,9 @@ parser.add_argument("--stop_after", required=False, help="stop after n sentences
 parser.add_argument("--temperature", required=False, help="softmax temperature", type=float, default=1.0)
 
 args = parser.parse_args()
+
+if args.target_gold:
+    target_gold_handle = args.target_gold.open()
 
 source_language_name = args.source.stem.split(".", 1)[0]  # needed to flag the outputs
 
@@ -82,6 +88,12 @@ target_sid_counter = -1
 source_sentences = []
 for source_sentence in conll.sentences(source_file_handle, sentence_getter=get_source_data):
     source_sentences.append(source_sentence)
+
+# load all target gold sentences, if existing (for evaluation purposes)
+if args.target_gold:
+    target_gold_sentences = []
+    for target_gold_sentence in conll.sentences(target_gold_handle, sentence_getter=get_source_data):
+        target_gold_sentences.append(target_gold_sentence)
 
 for target_sentence in conll.sentences(target_file_handle, sentence_getter=conll.get_next_sentence):
 
@@ -143,6 +155,14 @@ for target_sentence in conll.sentences(target_file_handle, sentence_getter=conll
     # apply the pair similarity factor
     if args.use_similarity:
         T *= similarity
+
+    # if there is a gold file, perform evaluation
+    if args.target_gold and target_sid_counter < len(target_gold_sentences):
+        gold_heads = [token.head for token in target_gold_sentences[target_sid_counter]]
+        decoded_heads = cle.mdst(T)
+        num_correct = sum([gold_head == decoded_head for gold_head, decoded_head in zip(gold_heads, decoded_heads)])
+        num_total = len(gold_heads)
+        print(num_correct, num_total, file=sys.stderr)
 
     # print the results
     for token in target_sentence:
