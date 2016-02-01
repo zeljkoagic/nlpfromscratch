@@ -168,8 +168,8 @@ for target_sentence in conll.sentences(target_file_handle, sentence_getter=conll
         num_correct += sum([gold_head == decoded_head for gold_head, decoded_head in zip(gold_heads, decoded_heads)])
         num_total += len(gold_heads)
 
-    # speed-up for the intrinsic evaluation
-    else:
+    # speed-up for the intrinsic evaluation, skips the rest of the projection
+    elif args.target_gold:
         break
 
     # print the results
