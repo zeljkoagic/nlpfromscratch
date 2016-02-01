@@ -169,7 +169,7 @@ for target_sentence in conll.sentences(target_file_handle, sentence_getter=conll
         num_total += len(gold_heads)
 
     # speed-up for the intrinsic evaluation
-    if target_sid_counter >= len(target_gold_sentences):
+    else:
         break
 
     # print the results
