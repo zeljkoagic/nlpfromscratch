@@ -168,6 +168,10 @@ for target_sentence in conll.sentences(target_file_handle, sentence_getter=conll
         num_correct += sum([gold_head == decoded_head for gold_head, decoded_head in zip(gold_heads, decoded_heads)])
         num_total += len(gold_heads)
 
+    # speed-up for the intrinsic evaluation
+    if target_sid_counter >= len(target_gold_sentences):
+        break
+
     # print the results
     for token in target_sentence:
         # get the POS projections for the current target token
