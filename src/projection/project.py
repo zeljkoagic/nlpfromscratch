@@ -158,6 +158,7 @@ for target_sentence in conll.sentences(target_file_handle, sentence_getter=conll
 
     # if there is a gold file, perform evaluation
     if args.target_gold and target_sid_counter < len(target_gold_sentences):
+        print(target_gold_sentences[target_sid_counter])
         gold_heads = [token.head for token in target_gold_sentences[target_sid_counter]]
         decoded_heads = cle.mdst(T)
         num_correct = sum([gold_head == decoded_head for gold_head, decoded_head in zip(gold_heads, decoded_heads)])
