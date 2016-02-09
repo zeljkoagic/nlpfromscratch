@@ -1,56 +1,41 @@
-from __future__ import division
-import numpy as np
 from collections import defaultdict, Counter
+import numpy as np
 from scipy import sparse
 
 
-def read_sentence_alignments(filename):
-    """Reads hunalign-style sentence alignments, and stores them in a dictionary. Sentence alignments are 1:1.
+def read_alignments(filename_sa, filename_wa):
+    """Reads sentence alignments and word alignments for a given source-target language pair.
+    The alignments are paired through sentence ids.
 
-    :param filename the sentence alignments file
-    :return: a source sentence id-indexed dictionary of two-item lists, src_id -> [trg_id, confidence]
+    :param filename_sa: sentence alignment filename, hunalign format
+    :param filename_wa: word alignment filename, efmaral/fast_align format
+    :return: dictionaries of sentence and word alignments, and the language similarity estimate
     """
     saligns = defaultdict(list)
-
-    for line in open(filename):
-
-        line = line.strip()
-        line = line.split()
-
-        if len(line) == 3:
-            src_id = int(line[0])
-            trg_id = int(line[1])
-            confidence = float(line[2])
-            saligns[trg_id] = [src_id, confidence]
-
-    return saligns
-
-
-def read_word_alignments(filename):
-    """Reads fast-align word alignments.
-
-    :param filename: fast_align-formatted word alignments file
-    :return: a list of <word pairs, probabilities> pairs for all aligned sentences, and the language similarity estimate
-    """
-    waligns = []
+    waligns = defaultdict(list)
     similarity = 0
     count = 0
 
-    for line in open(filename):
+    for line_sa, line_wa in zip(open(filename_sa), open(filename_wa)):
 
-        alignment_items = line.strip().split()
+        sa_items = line_sa.strip().split()
+        wa_items = line_wa.strip().split()
 
-        if alignment_items:
-            # account for the alignment file format
-            pairs = [pair.split("-") for pair in alignment_items[::2]]
-            probabilities = [float(p) for p in alignment_items[1::2]]
-            waligns.append((pairs, probabilities))
+        src_id = int(sa_items[0])
+        trg_id = int(sa_items[1])
+        confidence = float(sa_items[2])
+        saligns[trg_id] = [src_id, confidence]
+
+        if wa_items:
+            pairs = [(int(sid), int(tid)) for sid, tid in [pair.split("-") for pair in wa_items[::2]]]
+            probabilities = [float(p) for p in wa_items[1::2]]
+            waligns[(trg_id, src_id)] = (pairs, probabilities)
             count += len(probabilities)
             similarity += sum(probabilities)
+        else:
+            waligns[(trg_id, src_id)] = None  # for efmaral's empty alignment lines
 
-            assert len(probabilities) == len(pairs), "Prob-pair mismatch"
-
-    return waligns, similarity / count
+    return saligns, waligns, similarity / count
 
 
 def get_alignment_matrix(shape, pairs, probabilities, binary=False):
@@ -66,18 +51,15 @@ def get_alignment_matrix(shape, pairs, probabilities, binary=False):
     if len(pairs) != len(probabilities):
         raise Exception("Mismatch in sizes of pairs (%s) and probabilities (%s)" % (len(pairs), len(probabilities)))
 
-    # matrix = np.ones(shape) * np.nan  # change here for non-zero default
     src_indices = []
     trg_indices = []
 
     for it in range(len(pairs)):
         source_id, target_id = pairs[it]
-        src_indices.append(source_id)
-        trg_indices.append(target_id)
-        # probability = probabilities[it]
-        # matrix[int(source_id)+1, int(target_id)+1] = float(probability)
+        src_indices.append(source_id + 1)  # word alignments are 0-indexed, here we move to CoNLL indexing (+1)
+        trg_indices.append(target_id + 1)
 
-    # root aligns to root
+    # root always aligns to root, accommodate for that
     src_indices.append(0)
     trg_indices.append(0)
     probabilities.append(1.0)
@@ -87,8 +69,6 @@ def get_alignment_matrix(shape, pairs, probabilities, binary=False):
 
     matrix = sparse.coo_matrix((probabilities, (src_indices, trg_indices)), shape=shape)
 
-    # matrix[0, 0] = 1.0  # source root always aligns to target root
-    # return np.where(matrix == 0, [0.5], matrix)
     return matrix.tocsr()
 
 
@@ -110,32 +90,11 @@ def project_dependencies_to_target(S, A):  # TODO Matrix S must be normalized, i
             for h in range(m_plus_one):
                 np.dot(A[d].reshape(-1, 1), A[h].reshape(1, -1), out=T_edge)
                 T_edge *= S[d, h]  # multiply by confidence of edge h->d from the source parse
-                # T += T_edge
                 np.fmax(T, T_edge, out=T)
     return T
 
 
-def project_dependencies_to_target_new(S, A):
-    m_plus_one, n_plus_one = A.shape
-
-    T = np.ones(shape=(n_plus_one, n_plus_one)) * np.nan  # target graph
-    T_edge = np.ones_like(T) * np.nan
-
-    # for each dependent d in source graph (dependents are rows!)
-    rows = np.expand_dims(A, axis=-1)
-    targets_for_row = np.zeros([A.shape[0], T.shape[0], T.shape[0]])
-
-    for h in range(m_plus_one):
-        np.dot(rows, A[h].reshape(1, -1), out=targets_for_row)
-        targets_for_row *= S[:, h].reshape(-1, 1, 1)
-
-        np.nanmax(targets_for_row, axis=0, out=T_edge)
-        np.fmax(T, T_edge, out=T)
-
-    return T
-
-
-def project_token_labels(source_labels, wa_pairs, wa_probs, weigh_votes=True):
+def project_token_labels(source_labels, wa_pairs, wa_probs):
     """Projects the token labels from source to target tokens in a sentence.
 
     :param source_labels: list of source labels ordered by source token id
@@ -147,12 +106,9 @@ def project_token_labels(source_labels, wa_pairs, wa_probs, weigh_votes=True):
     label_votes = defaultdict(Counter)  # dictionary of counters
 
     it = 0
-    for pair in wa_pairs:
-        sid, tid = pair
-        if weigh_votes:
-            label_votes[int(tid) + 1].update({source_labels[int(sid)]: wa_probs[it]})
-        else:
-            label_votes[int(tid) + 1].update({source_labels[int(sid)]: 1})
+    for sid, tid in wa_pairs:
+        # word alignments are 0-indexed, here we move to CoNLL indexing (+1) for target
+        label_votes[tid + 1].update({source_labels[sid]: wa_probs[it]})
         it += 1
 
     return label_votes

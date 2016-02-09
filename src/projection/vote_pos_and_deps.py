@@ -11,6 +11,8 @@ from pathlib import Path
 import utils.score as score
 from dependency_decoding import chu_liu_edmonds
 import warnings
+import math
+import utils.normalize as norm
 
 
 def add_root_row(tensor):
@@ -41,14 +43,18 @@ parser = argparse.ArgumentParser(description="Voting and CLE decoding on project
 parser.add_argument("--target", required=True, help="target CoNLL file", type=Path)
 parser.add_argument("--projections", required=True, help="path to vote files", type=Path, nargs="+")
 parser.add_argument("--stop_after", required=False, help="stop after n sentences")
-parser.add_argument('--inner_vote_pos', action='store_true', help="intra-language POS tag voting")
-parser.add_argument('--inner_vote_labels', action='store_true', help="intra-language dependency label voting")
+parser.add_argument('--unit_vote_pos', required=True, choices=[0, 1], help="use unit votes for POS tag voting", type=int)
 parser.add_argument('--pretagged', action='store_true', help="use preassigned target POS tags instead of voted tags")
 parser.add_argument('--dump_npz', action='store_true', help="dump NPZ debug files")
 parser.add_argument('--skip_untagged', action='store_true', help="skip sentences with untagged tokens")
 parser.add_argument('--decode', action='store_true', help="perform CLE decoding")
 
 args = parser.parse_args()
+
+# TODO
+pos_vote_casts = {1: math.ceil,
+                  0: lambda x: x}
+pos_vote_caster = pos_vote_casts[args.unit_vote_pos]
 
 target_file_handle = args.target.open()
 
@@ -99,15 +105,11 @@ for lines in zip(*vote_handles):
 
             for vote in source_pos_votes:
                 pos, num = vote.split(":")
-                source_pos_counter.update({pos: int(num)})
-                if args.inner_vote_pos:
-                    break
+                source_pos_counter.update({pos: pos_vote_caster(float(num))})
 
             #for vote in source_label_votes:
             #    label, num = vote.split(":")
             #    source_label_counter.update({label: int(num)})
-            #    if args.inner_vote_labels:  # TODO Do we want inner voting to apply for dependency labels too?
-            #        break
 
             # add single source counts to the overall pool
             overall_pos_votes.update(source_pos_counter)
@@ -144,7 +146,8 @@ for lines in zip(*vote_handles):
             current_sentence_tensor = add_root_row(np.array(current_sentence_tensor))
 
             # unify the source language matrices into a single a matrix
-            current_sentence_matrix = vote_weight_matrix(current_sentence_tensor)
+            # first we sum, then per-row normalize using softmax
+            current_sentence_matrix = norm.softmax(vote_weight_matrix(current_sentence_tensor))
             eliminate_all_nan_rows(current_sentence_matrix)
 
             # dump the raw projections into a file, for debug purposes

@@ -1,4 +1,5 @@
 from utils.coo_matrix_nocheck import CooMatrix
+import numpy as np
 
 
 class ConllToken:
@@ -61,24 +62,12 @@ def get_next_sentence(conll_file_handle):
     return next_sentence
 
 
-def sentences(conll_file_handle, sentence_getter):
-    """TODO
-    :param conll_file_handle:
-    :param sentence_getter:
-    :return:
-    """
-    while True:
-        next_sentence = sentence_getter(conll_file_handle)
-        if not next_sentence:
-            break
-        yield next_sentence
-
-
+# TODO We dropped the dependency labels from these for now!
 def get_next_sentence_and_graph(conll_file_handle):
     """Reads next sentence, graph, and POS-tags from augmented CoNLL file.
 
     :param conll_file_handle: file handle for augmented CoNLL-formatted file (lines 9-end contain graph data)
-    :return: <list of tokens, sentence graph, parts of speech, dependency labels> 4-tuple
+    :return: <list of tokens, sentence graph, parts of speech> 3-tuple
     """
     next_sentence = []
     parts_of_speech = []
@@ -94,7 +83,7 @@ def get_next_sentence_and_graph(conll_file_handle):
         next_sentence.append(ConllToken.from_list(line[:8]))
         graph_parts = [item.split(":") for item in line[8:]]
 
-        for head, confidence in graph_parts:  # TODO
+        for head, confidence in graph_parts:  # TODO Could this be a bit more efficient?
             head_indices.append(int(head))
             dep_indices.append(it)
             confidences.append(float(confidence))
@@ -113,7 +102,7 @@ def get_next_sentence_and_tree(conll_file_handle):
     parse tree provided by the parser decoder, i.e., it is instantiated from the parse, and not from the weight matrix.
 
     :param conll_file_handle: file handle for augmented CoNLL-formatted file (lines 9-end contain graph data)
-    :return: <list of tokens, sentence dependency tree, parts of speech, dependency labels> 4-tuple
+    :return: <list of tokens, sentence dependency tree, parts of speech> 3-tuple
     """
     next_sentence = []
     parts_of_speech = []
@@ -137,3 +126,46 @@ def get_next_sentence_and_tree(conll_file_handle):
                            shape=(len(next_sentence) + 1, len(next_sentence) + 1))
 
     return next_sentence, next_graph, parts_of_speech
+
+
+def get_next_sentence_and_tree_old(conll_file_handle):
+    """TODO
+    """
+    next_sentence = []
+    next_heads = []
+    parts_of_speech = []
+
+    line = conll_file_handle.readline().strip().split()
+
+    while line:
+        next_sentence.append(ConllToken.from_list(line[:8]))
+        next_heads.append(int(line[6]))
+        parts_of_speech.append(line[3])
+        line = conll_file_handle.readline().strip().split()
+
+    # create graph (n+1 x n+1)
+    next_graph = np.zeros((len(next_sentence) + 1, len(next_sentence) + 1))
+
+    # assign the collected heads to the graph
+    it = 0
+    for head in next_heads:
+        next_graph[it+1][head] = 1.0
+        it += 1
+
+    return next_sentence, next_graph, parts_of_speech
+
+
+
+
+def sentences(conll_file_handle, sentence_getter):
+    """Sentence generator for CoNLL-style files.
+
+    :param conll_file_handle: handle to a CoNLL-style file
+    :param sentence_getter: function for getting sentences and possibly annotations
+    :return: yields sentences
+    """
+    while True:
+        next_sentence = sentence_getter(conll_file_handle)
+        if not next_sentence or not next_sentence[0]:  # subscript accommodates for getters returning tuples
+            break
+        yield next_sentence
