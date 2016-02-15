@@ -1,17 +1,26 @@
 from __future__ import print_function, division
 
-from collections import namedtuple, defaultdict
+from collections import defaultdict
 from random import random
 
+import networkx as nx
 import numpy as np
 from gurobipy import Model, GRB, quicksum
-import networkx as nx
 
-np.random.seed(42)
+np.random.seed(45)
 
 
-class Arc(namedtuple('Arc', 'u v u_pos v_pos weight')):
-    def __str__(self):
+class Arc:
+    __slots__ = ['u', 'v', 'u_pos', 'v_pos', 'weight', 'flow_var', 'edge_var']
+
+    def __init__(self, u, v, u_pos, v_pos, weight):
+        self.u = u
+        self.v = v
+        self.u_pos = u_pos
+        self.v_pos = v_pos
+        self.weight = weight
+
+    def __repr__(self):
         return "{}_{}_{}_{}".format(self.u, self.v, self.u_pos, self.v_pos)
 
 
@@ -39,11 +48,9 @@ def build_joint_model(arc_list, num_nodes):
     model = Model("single_commodity")
 
     # Variables: a cont. flow variable and an binary variable for each edge
-    flow_vars = {}
-    edge_vars = {}
     for arc in arc_list:
-        flow_vars[arc] = model.addVar(name="flow_" + str(arc))
-        edge_vars[arc] = model.addVar(vtype=GRB.BINARY, name="edge_" + str(arc))
+        arc.flow_var = model.addVar(name="flow_" + str(arc))
+        arc.edge_var = model.addVar(vtype=GRB.BINARY, name="edge_" + str(arc))
 
     # Variable: a POS variable for each possible token value
     pos_vars = {}
@@ -58,60 +65,73 @@ def build_joint_model(arc_list, num_nodes):
     # Node constraints
     for n in range(1, num_nodes):
         # Constraint: each node has exactly one parent
-        incoming_vars = [edge_vars[arc] for arc in incoming_arcs[n]]
+        incoming_vars = [arc.edge_var for arc in incoming_arcs[n]]
         model.addConstr(quicksum(incoming_vars) == 1)
 
         # Constraint: each pos has exactly one value
         model.addConstr(quicksum(pos_vars[n]) == 1)
 
         # Constraint: Each node consumes one unit of flow
-        in_flow = [flow_vars[arc] for arc in incoming_arcs[n]]
-        out_flow = [flow_vars[arc] for arc in outgoing_arcs[n]]
+        in_flow = [arc.flow_var for arc in incoming_arcs[n]]
+        out_flow = [arc.flow_var for arc in outgoing_arcs[n]]
         model.addConstr(quicksum(in_flow) - quicksum(out_flow) == 1)
 
     # Connectivity constraint. Root sends flow to each node
-    root_out_flow = [flow_vars[arc] for arc in outgoing_arcs[0]]
+    root_out_flow = [arc.flow_var for arc in outgoing_arcs[0]]
     model.addConstr(quicksum(root_out_flow) == (num_nodes - 1))
 
     # Inactive arcs have no flow
     LARGE_NUMBER = 1000
     for arc in arc_list:
-        model.addConstr(flow_vars[arc] <= (edge_vars[arc] * LARGE_NUMBER))
+        model.addConstr(arc.flow_var <= (arc.edge_var * LARGE_NUMBER))
 
     # Setup objective
-    terms = [edge_vars[arc] * arc.weight for arc in arc_list]
+    terms = [arc.edge_var * arc.weight for arc in arc_list]
     model.setObjective(quicksum(terms))
 
     # Missing: Constraint POS with respect to edges
     for arc in arc_list:
         if arc.u != 0:
-            model.addConstr(pos_vars[arc.u][arc.u_pos] >= edge_vars[arc])
-        model.addConstr(pos_vars[arc.v][arc.v_pos] >= edge_vars[arc])
+            model.addConstr(pos_vars[arc.u][arc.u_pos] >= arc.edge_var)
+        model.addConstr(pos_vars[arc.v][arc.v_pos] >= arc.edge_var)
 
     model.update()
     return model
 
 
-arc_list = make_dense_arcs(4, 3)
-model = build_joint_model(arc_list, 4)
-print(model)
-model.optimize()
+def extract_solution(arc_list, num_nodes):
+    heads = [-1] * num_nodes
+    pos = [-1] * num_nodes
+
+    for arc in arc_list:
+        if arc.edge_var.x == 1.0:
+            heads[arc.v] = arc.u
+
+            if arc.u != 0:
+                assert pos[arc.u] == -1 or pos[arc.u] == arc.u_pos, [str(arc), pos]
+                pos[arc.u] = arc.u_pos
+
+            assert pos[arc.v] == -1 or pos[arc.v] == arc.v_pos, [str(arc), pos]
+            pos[arc.v] = arc.v_pos
+
+    return heads, pos
 
 
-G = nx.DiGraph()
-for var in model.getVars():
-    # print(var.varName, var.x)
-    if var.varName.startswith("edge") and var.x == 1.0:
-        parts = var.varName.split("_")
-        u, v = map(int, parts[1:3])
-        G.add_edge(u, v, u_pos=parts[3], v_pos=parts[4])
+def check_is_tree(arc_list, num_nodes):
+    G = nx.DiGraph()
+    for arc in arc_list:
+        if arc.edge_var.x == 1.0:
+            G.add_edge(arc.u, arc.v, u_pos=arc.u_pos, v_pos=arc.v_pos)
 
-    elif var.varName.startswith("pos") and var.x == 1.0:
-        parts = var.varName.split("_")
-        u = int(parts[1])
-        G.add_node(u)
-        G.node[u]['pos'] = parts[2]
+    return nx.is_tree(G) and G.number_of_nodes() == num_nodes
 
-print(G.edges(data=True))
-print("Is tree", nx.is_tree(G))
-print(G.nodes(data=True))
+
+if __name__ == '__main__':
+    num_nodes = 50
+    arc_list = make_dense_arcs(num_nodes, 3)
+    model = build_joint_model(arc_list, num_nodes)
+    print(model)
+    model.optimize()
+
+    print("Is tree", check_is_tree(arc_list, num_nodes))
+    print(extract_solution(arc_list, num_nodes))
