@@ -58,7 +58,7 @@ for pair in args.pairs:
     for i, src_parse in enumerate(src_parses):
         forms, pos, weights = src_parse
 
-        target_ids = sent_align.query('src_sent_id = @i').target_sent_id
+        target_ids = sent_align.query('src_sent_id == @i').target_sent_id
         if len(target_ids):
             target_id = target_ids.iloc[0]
             pair_id = target_ids.index[0]
