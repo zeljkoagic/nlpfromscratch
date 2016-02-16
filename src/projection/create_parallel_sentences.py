@@ -33,8 +33,8 @@ def read_parses(conll_file):
     return parses
 
 parser = argparse.ArgumentParser(description="Projects dependency trees from source to target via word alignments.")
-parser.add_argument("--pairs", required=True, help="Pairs", type=Path, nargs="+")
-parser.add_argument("--corpus", required=True, help="Name of corpus", type=Path)
+parser.add_argument("--pairs", required=True, help="Pairs", nargs="+")
+parser.add_argument("--corpus", required=True, help="Name of corpus")
 parser.add_argument("--base-dir", required=True, help="Root of preprocessed dir", type=Path)
 parser.add_argument('--out', required=True, help="Output file", type=Path)
 
