@@ -112,3 +112,29 @@ def project_token_labels(source_labels, wa_pairs, wa_probs):
         it += 1
 
     return label_votes
+
+def read_word_alignments(word_alignment_file):
+    alignment_pairs = []
+    with word_alignment_file.open() as in_file:
+        for line in in_file:
+            alignments_per_sent = []
+
+            parts = line.split(" ")
+            if len(parts) > 1:
+                assert len(parts) % 2 == 0
+                for token_pair, prob in zip(parts[::2], parts[1::2]):
+                    src_token_id, target_token_id = map(int, token_pair.split("-"))
+                    alignments_per_sent.append((src_token_id + 1, target_token_id + 1, float(prob)))
+
+            alignment_pairs.append(alignments_per_sent)
+
+    return alignment_pairs
+
+
+
+
+
+
+
+
+
