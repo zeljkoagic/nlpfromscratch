@@ -69,11 +69,10 @@ for pair in args.pairs:
         # target_ids = sent_align.query('src_sent_id == @i').target_sent_id
 
         if i in sent_align_dict:
-            source_id = i
-            target_id = sent_align_dict[source_id]
+            target_id = sent_align_dict[i]
 
             source_sent = SourceSentence(weights, pos, forms, language=src_lang,
-                                         alignments=word_align[(source_id, target_id)])
+                                         alignments=word_align[pair_id])  # TODO Still have to match salign-walign
             source_sents_by_target[target_id].append(source_sent)
 
 
