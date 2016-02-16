@@ -52,7 +52,7 @@ for pair in args.pairs:
     word_align = read_word_alignments(word_align_file)
 
     # CONLL file
-    src_conll_file = (args.base_dir / 'parse' / '{}.conll'.format(src_lang))
+    src_conll_file = (args.base_dir / 'parse' / '{}.{}.conll'.format(src_lang, args.corpus))
     src_parses = read_parses(src_conll_file)
 
     for i, src_parse in enumerate(src_parses):
@@ -73,10 +73,10 @@ target_langs = {pair.split("-")[0] for pair in args.pairs}
 assert len(target_langs) == 1
 target_lang = list(target_langs)[0]
 
-target_sent_file = (args.base_dir / 'parse' / '{}.conll'.format(target_lang))
+target_sent_file = (args.base_dir / 'parse' / '{}.{}.conll'.format(target_lang, args.corpus))
 target_sents = read_sents_from_conll(target_sent_file)
 
-target_gold_file = (args.base_dir / 'gold' / '{}.conll'.format(target_lang))
+target_gold_file = (args.base_dir / 'gold' / '{}.{}.conll'.format(target_lang, args.corpus))
 if target_gold_file.is_file():
     target_gold_parses = read_parses(target_gold_file)
 
