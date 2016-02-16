@@ -8,12 +8,18 @@ from utils import conll
 
 from parallel_sentence import SourceSentence, ParallelSentence
 from utils.alignments import read_word_alignments
-from utils.conll import get_next_sentence_and_graph
+from utils.conll import get_next_sentence_and_graph, get_next_sentence
 
 import pandas as pd
 
 def read_sents_from_conll(conll_file):
-    pass
+    parses = []
+    with src_conll_file.open() as conll_fh:
+        for tokens in conll.sentences(conll_fh, sentence_getter=get_next_sentence):
+            forms = ['ROOT'] + [token.form for token in tokens]
+            parses.append(forms)
+
+    return parses
 
 
 def read_parses(conll_file):
@@ -47,6 +53,8 @@ for pair in args.pairs:
 
     sent_align_file = (args.base_dir / 'salign' / "{}.{}.sal".format(pair, args.corpus))
     sent_align = pd.read_csv(str(sent_align_file), sep="\t", names=['src_sent_id', 'target_sent_id', 'prob'])
+    sent_align_dict = sent_align.groupby(['src_sent_id']).target_sent_id.sum().to_dict()
+
 
     word_align_file = (args.base_dir / 'walign' / "{}.{}.ibm1.reverse.wal".format(pair, args.corpus))
     word_align = read_word_alignments(word_align_file)
@@ -58,13 +66,14 @@ for pair in args.pairs:
     for i, src_parse in enumerate(src_parses):
         forms, pos, weights = src_parse
 
-        target_ids = sent_align.query('src_sent_id == @i').target_sent_id
-        if len(target_ids):
-            target_id = target_ids.iloc[0]
-            pair_id = target_ids.index[0]
+        # target_ids = sent_align.query('src_sent_id == @i').target_sent_id
+
+        if i in sent_align_dict:
+            source_id = i
+            target_id = sent_align_dict[source_id]
 
             source_sent = SourceSentence(weights, pos, forms, language=src_lang,
-                                         alignments=word_align[pair_id])
+                                         alignments=word_align[(source_id, target_id)])
             source_sents_by_target[target_id].append(source_sent)
 
 
