@@ -119,7 +119,7 @@ def read_word_alignments(word_alignment_file):
         for line in in_file:
             alignments_per_sent = []
 
-            parts = line.split(" ")
+            parts = line.strip().split(" ")
             if len(parts) > 1:
                 assert len(parts) % 2 == 0
                 for token_pair, prob in zip(parts[::2], parts[1::2]):
