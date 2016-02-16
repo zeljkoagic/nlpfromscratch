@@ -46,7 +46,7 @@ for pair in args.pairs:
     src_lang, _ = pair.split("-")
 
     sent_align_file = (args.base_dir / 'salign' / "{}.{}.sal".format(pair, args.corpus))
-    sent_align = pd.read_csv(str(sent_align_file), names=['src_sent_id', 'target_sent_id', 'prob'])
+    sent_align = pd.read_csv(str(sent_align_file), sep="\t", names=['src_sent_id', 'target_sent_id', 'prob'])
 
     word_align_file = (args.base_dir / 'walign' / "{}.{}.ibm1.reverse.wal".format(pair, args.corpus))
     word_align = read_word_alignments(word_align_file)
