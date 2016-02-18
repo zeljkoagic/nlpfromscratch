@@ -57,7 +57,7 @@ for parallel_sent in parallel_sentences:
     # Take the max over all arcs that share (u, v, u_pos, v_pos)
     maxed_arcs = []
     all_arcs = sorted(all_arcs, key=lambda arc: (arc.u, arc.v, arc.u_pos, arc.v_pos, -arc.weight))
-    for arc_group in groupby(all_arcs, key=lambda arc: (arc.u, arc.v, arc.u_pos, arc.v_pos)):
+    for _, arc_group in groupby(all_arcs, key=lambda arc: (arc.u, arc.v, arc.u_pos, arc.v_pos)):
         maxed_arcs.append(next(arc_group))
 
     # Building model
