@@ -52,9 +52,13 @@ for pair in args.pairs:
     src_lang, _ = pair.split("-")
 
     sent_align_file = (args.base_dir / 'salign' / "{}.{}.sal".format(pair, args.corpus))
-    sent_align = pd.read_csv(str(sent_align_file), sep="\t", names=['src_sent_id', 'target_sent_id', 'prob'])
-    sent_align_dict = sent_align.groupby(['src_sent_id']).target_sent_id.sum().to_dict()
-
+    target_to_source_map = {}
+    for pair_i, line in enumerate(sent_align_file.open()):
+        parts = line.strip('\n').split("\t")
+        assert len(parts) == 3
+        source_sent_id = int(parts[0])
+        target_sent_id = int(parts[1])
+        target_to_source_map[source_sent_id] = (target_sent_id, pair_i)
 
     word_align_file = (args.base_dir / 'walign' / "{}.{}.ibm1.reverse.wal".format(pair, args.corpus))
     word_align = read_word_alignments(word_align_file)
@@ -65,15 +69,12 @@ for pair in args.pairs:
 
     for i, src_parse in enumerate(src_parses):
         forms, pos, weights = src_parse
+        target_sent_id, pair_id = target_to_source_map.get(i, [None, None])
 
-        # target_ids = sent_align.query('src_sent_id == @i').target_sent_id
-
-        if i in sent_align_dict:
-            target_id = sent_align_dict[i]
-
+        if target_sent_id:
             source_sent = SourceSentence(weights, pos, forms, language=src_lang,
-                                         alignments=word_align[pair_id])  # TODO Still have to match salign-walign
-            source_sents_by_target[target_id].append(source_sent)
+                                         alignments=word_align[pair_id])
+            source_sents_by_target[target_sent_id].append(source_sent)
 
 
 # Read in target
