@@ -1,137 +1,70 @@
-from __future__ import print_function, division
+import argparse
 
-from collections import defaultdict
-from random import random
+import pickle
+from itertools import groupby, product
 
-import networkx as nx
-import numpy as np
-from gurobipy import Model, GRB, quicksum
+from arc import Arc
+from ilp_model import build_joint_model, extract_solution
+from parallel_sentence import ParallelSentence
 
-np.random.seed(45)
+parser = argparse.ArgumentParser(description="Projects dependency trees from source to target via word alignments.")
 
+parser.add_argument("parallel_corpus", help="Pickle file with parallel sentences")
+args = parser.parse_args()
 
-class Arc:
-    __slots__ = ['u', 'v', 'u_pos', 'v_pos', 'weight', 'flow_var', 'edge_var']
+parallel_sentences = pickle.load(args.parallel_corpus)
 
-    def __init__(self, u, v, u_pos, v_pos, weight):
-        self.u = u
-        self.v = v
-        self.u_pos = u_pos
-        self.v_pos = v_pos
-        self.weight = weight
+def index_by_source(alignments):
+    alignments_by_source = {}
 
-    def __repr__(self):
-        return "{}_{}_{}_{}".format(self.u, self.v, self.u_pos, self.v_pos)
+    for s_i, list_of_alignments in groupby(alignments, key=lambda t: t[0]):
+        alignments_by_source[s_i] = list_of_alignments
 
-
-def make_dense_arcs(num_nodes, num_pos):
-    # edge_weights = np.random.rand(num_tokens, num_tokens)
-    arcs = []
-    for u in range(num_nodes):
-        for v in range(1, num_nodes):
-            if u == v:
-                continue
-            for u_pos in range(num_pos):
-                for v_pos in range(num_pos):
-                    arcs.append(Arc(u, v, u_pos, v_pos, random()))
-    return arcs
+    return alignments_by_source
 
 
-def build_joint_model(arc_list, num_nodes):
-    outgoing_arcs = defaultdict(list)
-    incoming_arcs = defaultdict(list)
+def build_arc_for_source(parallel_sent: ParallelSentence):
+    arc_list = []
 
-    for arc in arc_list:
-        outgoing_arcs[arc.u].append(arc)
-        incoming_arcs[arc.v].append(arc)
+    for source_sent in parallel_sent.sources:
+        alignments_by_source = index_by_source(source_sent.alignments)
 
-    model = Model("single_commodity")
+        source_row = source_sent.weights.row
+        source_col = source_sent.weights.col
+        source_data = source_sent.weights.data
 
-    # Variables: a cont. flow variable and an binary variable for each edge
-    for arc in arc_list:
-        arc.flow_var = model.addVar(name="flow_" + str(arc))
-        arc.edge_var = model.addVar(vtype=GRB.BINARY, name="edge_" + str(arc))
+        for i in range(source_row.shape[0]):
+            s_i = source_row[i]
+            s_j = source_col[i]
+            source_edge_score = source_data[i]
 
-    # Variable: a POS variable for each possible token value
-    pos_vars = {}
-    for n in range(1, num_nodes):
-        possible_pos = {arc.u_pos for arc in outgoing_arcs[n]} | {arc.v_pos for arc in incoming_arcs[n]}
-        pos_vars[n] = [model.addVar(vtype=GRB.BINARY, name='pos_{}_{}'.format(n, pos))
-                       for pos in possible_pos]
-        assert len(pos_vars[n])
+            for ta_i, ta_j in product(alignments_by_source[s_i], alignments_by_source[s_j]):
+                _, t_i, w_ii = ta_i
+                _, t_j, w_jj = ta_j
 
-    model.update()
+                arc_list.append(Arc(u=t_i, v=t_j,
+                                    u_pos=source_sent.pos[s_i], v_pos=source_sent.pos[s_j],
+                                    weight=w_ii * w_jj * source_edge_score
+                                    ))
 
-    # Node constraints
-    for n in range(1, num_nodes):
-        # Constraint: each node has exactly one parent
-        incoming_vars = [arc.edge_var for arc in incoming_arcs[n]]
-        model.addConstr(quicksum(incoming_vars) == 1)
-
-        # Constraint: each pos has exactly one value
-        model.addConstr(quicksum(pos_vars[n]) == 1)
-
-        # Constraint: Each node consumes one unit of flow
-        in_flow = [arc.flow_var for arc in incoming_arcs[n]]
-        out_flow = [arc.flow_var for arc in outgoing_arcs[n]]
-        model.addConstr(quicksum(in_flow) - quicksum(out_flow) == 1)
-
-    # Connectivity constraint. Root sends flow to each node
-    root_out_flow = [arc.flow_var for arc in outgoing_arcs[0]]
-    model.addConstr(quicksum(root_out_flow) == (num_nodes - 1))
-
-    # Inactive arcs have no flow
-    LARGE_NUMBER = 1000
-    for arc in arc_list:
-        model.addConstr(arc.flow_var <= (arc.edge_var * LARGE_NUMBER))
-
-    # Setup objective
-    terms = [arc.edge_var * arc.weight for arc in arc_list]
-    model.setObjective(quicksum(terms))
-
-    # Missing: Constraint POS with respect to edges
-    for arc in arc_list:
-        if arc.u != 0:
-            model.addConstr(pos_vars[arc.u][arc.u_pos] >= arc.edge_var)
-        model.addConstr(pos_vars[arc.v][arc.v_pos] >= arc.edge_var)
-
-    model.update()
-    return model
+    return arc_list
 
 
-def extract_solution(arc_list, num_nodes):
-    heads = [-1] * num_nodes
-    pos = [-1] * num_nodes
+for parallel_sent in parallel_sentences:
+    all_arcs = []
+    for source_sent in parallel_sent.sources:
+        all_arcs += build_arc_for_source(source_sent)
 
-    for arc in arc_list:
-        if arc.edge_var.x == 1.0:
-            heads[arc.v] = arc.u
+    # Take the max over all arcs that share (u, v, u_pos, v_pos)
+    maxed_arcs = []
+    all_arcs = sorted(all_arcs, key=lambda arc: (arc.u, arc.v, arc.u_pos, arc.v_pos, -arc.weight))
+    for arc_group in groupby(all_arcs, key=lambda arc: (arc.u, arc.v, arc.u_pos, arc.v_pos)):
+        maxed_arcs.append(next(arc_group))
 
-            if arc.u != 0:
-                assert pos[arc.u] == -1 or pos[arc.u] == arc.u_pos, [str(arc), pos]
-                pos[arc.u] = arc.u_pos
-
-            assert pos[arc.v] == -1 or pos[arc.v] == arc.v_pos, [str(arc), pos]
-            pos[arc.v] = arc.v_pos
-
-    return heads, pos
-
-
-def check_is_tree(arc_list, num_nodes):
-    G = nx.DiGraph()
-    for arc in arc_list:
-        if arc.edge_var.x == 1.0:
-            G.add_edge(arc.u, arc.v, u_pos=arc.u_pos, v_pos=arc.v_pos)
-
-    return nx.is_tree(G) and G.number_of_nodes() == num_nodes
-
-
-if __name__ == '__main__':
-    num_nodes = 50
-    arc_list = make_dense_arcs(num_nodes, 3)
-    model = build_joint_model(arc_list, num_nodes)
-    print(model)
+    # Building model
+    model = build_joint_model(maxed_arcs, num_nodes=len(parallel_sent.target))
     model.optimize()
+    heads, pos = extract_solution(maxed_arcs, num_nodes=len(parallel_sent.target))
 
-    print("Is tree", check_is_tree(arc_list, num_nodes))
-    print(extract_solution(arc_list, num_nodes))
+    print(heads)
+    print(pos)
