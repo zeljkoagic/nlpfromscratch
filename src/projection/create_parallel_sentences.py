@@ -44,7 +44,7 @@ def read_gold_parses(conll_file):
     with conll_file.open() as conll_fh:
         for tokens in conll.sentences(conll_fh, sentence_getter=get_next_sentence):
             forms = ['ROOT'] + [token.form for token in tokens]
-            pos = ['ROOT'] + pos
+            pos = ['ROOT'] + [token.pos for token in tokens]
             heads = [-1] + [token.head for token in tokens]
 
             assert len(forms) == len(pos)
