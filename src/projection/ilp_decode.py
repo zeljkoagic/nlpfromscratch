@@ -15,10 +15,11 @@ args = parser.parse_args()
 parallel_sentences = pickle.load(open(args.parallel_corpus, "rb"))
 
 def index_by_source(alignments):
-    alignments_by_source = {}
+    # FIXME here we are aligning roots and roots
+    alignments_by_source = {0: (0, 0, 1)}
 
-    for s_i, list_of_alignments in groupby(alignments, key=lambda t: t[0]):
-        alignments_by_source[s_i] = list_of_alignments
+    for s_i, group_of_alignments in groupby(alignments, key=lambda t: t[0]):
+        alignments_by_source[s_i] = list(group_of_alignments)
 
     return alignments_by_source
 
@@ -38,7 +39,7 @@ def build_arc_for_source(parallel_sent: ParallelSentence):
             s_j = source_col[i]
             source_edge_score = source_data[i]
 
-            for ta_i, ta_j in product(alignments_by_source[s_i], alignments_by_source[s_j]):
+            for ta_i, ta_j in product(alignments_by_source.get(s_i, []), alignments_by_source.get(s_j, [])):
                 _, t_i, w_ii = ta_i
                 _, t_j, w_jj = ta_j
 
