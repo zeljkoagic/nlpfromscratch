@@ -52,13 +52,13 @@ for pair in args.pairs:
     src_lang, _ = pair.split("-")
 
     sent_align_file = (args.base_dir / 'salign' / "{}.{}.sal".format(pair, args.corpus))
-    target_to_source_map = {}
+    source_to_target_map = {}
     for pair_i, line in enumerate(sent_align_file.open()):
         parts = line.strip('\n').split("\t")
         assert len(parts) == 3
         source_sent_id = int(parts[0])
         target_sent_id = int(parts[1])
-        target_to_source_map[source_sent_id] = (target_sent_id, pair_i)
+        source_to_target_map[source_sent_id] = (target_sent_id, pair_i)
 
     word_align_file = (args.base_dir / 'walign' / "{}.{}.ibm1.reverse.wal".format(pair, args.corpus))
     word_align = read_word_alignments(word_align_file)
@@ -69,9 +69,9 @@ for pair in args.pairs:
 
     for i, src_parse in enumerate(src_parses):
         forms, pos, weights = src_parse
-        target_sent_id, pair_id = target_to_source_map.get(i, [None, None])
+        target_sent_id, pair_id = source_to_target_map.get(i, [None, None])
 
-        if target_sent_id:
+        if target_sent_id is not None:
             source_sent = SourceSentence(weights, pos, forms=forms, language=src_lang,
                                          alignments=word_align[pair_id])
             source_sents_by_target[target_sent_id].append(source_sent)
