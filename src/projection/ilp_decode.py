@@ -1,7 +1,8 @@
 import argparse
 
 import pickle
-from itertools import groupby, product
+from collections import defaultdict
+from itertools import groupby, product, count
 
 from arc import Arc
 from ilp_model import build_joint_model, extract_solution
@@ -13,6 +14,9 @@ parser.add_argument("parallel_corpus", help="Pickle file with parallel sentences
 args = parser.parse_args()
 
 parallel_sentences = pickle.load(open(args.parallel_corpus, "rb"))
+
+pos_counter = count()
+pos_vocab = defaultdict(pos_counter.__next__)
 
 def index_by_source(alignments):
     # FIXME here we are aligning roots and roots
@@ -44,7 +48,8 @@ def build_arc_for_source(parallel_sent: ParallelSentence):
                 _, t_j, w_jj = ta_j
 
                 arc_list.append(Arc(u=t_i, v=t_j,
-                                    u_pos=source_sent.pos[s_i], v_pos=source_sent.pos[s_j],
+                                    u_pos=pos_vocab[source_sent.pos[s_i]],
+                                    v_pos=pos_vocab[source_sent.pos[s_j]],
                                     weight=w_ii * w_jj * source_edge_score
                                     ))
 
