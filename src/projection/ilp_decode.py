@@ -12,7 +12,7 @@ parser = argparse.ArgumentParser(description="Projects dependency trees from sou
 parser.add_argument("parallel_corpus", help="Pickle file with parallel sentences")
 args = parser.parse_args()
 
-parallel_sentences = pickle.load(args.parallel_corpus)
+parallel_sentences = pickle.load(open(args.parallel_corpus, "rb"))
 
 def index_by_source(alignments):
     alignments_by_source = {}
