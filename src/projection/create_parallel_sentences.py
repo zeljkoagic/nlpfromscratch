@@ -14,7 +14,7 @@ import pandas as pd
 
 def read_sents_from_conll(conll_file):
     parses = []
-    with src_conll_file.open() as conll_fh:
+    with conll_file.open() as conll_fh:
         for tokens in conll.sentences(conll_fh, sentence_getter=get_next_sentence):
             forms = ['ROOT'] + [token.form for token in tokens]
             parses.append(forms)
@@ -24,7 +24,7 @@ def read_sents_from_conll(conll_file):
 
 def read_parses(conll_file):
     parses = []
-    with src_conll_file.open() as conll_fh:
+    with conll_file.open() as conll_fh:
         for tokens_and_weights_and_pos in conll.sentences(conll_fh, sentence_getter=get_next_sentence_and_graph):
             tokens, weights, pos = tokens_and_weights_and_pos
             forms = ['ROOT'] + [token.form for token in tokens]
