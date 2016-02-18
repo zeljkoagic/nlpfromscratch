@@ -51,9 +51,7 @@ def build_arc_for_source(parallel_sent: ParallelSentence):
 
 
 for parallel_sent in parallel_sentences:
-    all_arcs = []
-    for source_sent in parallel_sent.sources:
-        all_arcs += build_arc_for_source(source_sent)
+    all_arcs = build_arc_for_source(parallel_sent)
 
     # Take the max over all arcs that share (u, v, u_pos, v_pos)
     maxed_arcs = []
