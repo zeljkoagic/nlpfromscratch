@@ -72,13 +72,13 @@ for pair in args.pairs:
         target_sent_id, pair_id = target_to_source_map.get(i, [None, None])
 
         if target_sent_id:
-            source_sent = SourceSentence(weights, pos, forms, language=src_lang,
+            source_sent = SourceSentence(weights, pos, forms=forms, language=src_lang,
                                          alignments=word_align[pair_id])
             source_sents_by_target[target_sent_id].append(source_sent)
 
 
 # Read in target
-target_langs = {pair.split("-")[0] for pair in args.pairs}
+target_langs = {pair.split("-")[1] for pair in args.pairs}
 assert len(target_langs) == 1
 target_lang = list(target_langs)[0]
 

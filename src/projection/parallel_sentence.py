@@ -6,9 +6,9 @@ class ParallelSentence:
 
 
 class SourceSentence:
-    def __init__(self, weights, pos, tokens, language, alignments):
+    def __init__(self, weights, pos, forms, language, alignments):
         self.weights = weights
         self.pos = pos
-        self.tokens = tokens
+        self.forms = forms
         self.language = language
         self.alignments = alignments
