@@ -38,6 +38,22 @@ def read_parses(conll_file):
 
     return parses
 
+
+def read_gold_parses(conll_file):
+    parses = []
+    with conll_file.open() as conll_fh:
+        for tokens in conll.sentences(conll_fh, sentence_getter=get_next_sentence):
+            forms = ['ROOT'] + [token.form for token in tokens]
+            pos = ['ROOT'] + pos
+            heads = [-1] + [token.head for token in tokens]
+
+            assert len(forms) == len(pos)
+            assert len(pos) == len(heads)
+
+            parses.append((forms, pos, heads))
+
+    return parses
+
 parser = argparse.ArgumentParser(description="Projects dependency trees from source to target via word alignments.")
 parser.add_argument("--pairs", required=True, help="Pairs", nargs="+")
 parser.add_argument("--corpus", required=True, help="Name of corpus")
@@ -86,14 +102,21 @@ target_sent_file = (args.base_dir / 'conll' / '{}.{}.conll'.format(target_lang, 
 target_sents = read_sents_from_conll(target_sent_file)
 
 target_gold_file = (args.base_dir / 'gold' / '{}.{}.conll'.format(target_lang, args.corpus))
+
+target_gold_parses = []
 if target_gold_file.is_file():
-    target_gold_parses = read_parses(target_gold_file)
+    target_gold_parses = read_gold_parses(target_gold_file)
 
 # Assemble parallel sentences
 parallel_sents = []
 for target_sent_id, target_sent in enumerate(target_sents):
+    if target_sent_id < len(target_gold_parses):
+        gold_parse = target_gold_parses[target_sent_id]
+    else:
+        gold_parse = None
     parallel_sent = ParallelSentence(target=target_sent,
-                                     sources=source_sents_by_target[target_sent_id])
+                                     sources=source_sents_by_target[target_sent_id],
+                                     gold=gold_parse)
     if len(parallel_sent.sources) >= 1:
         parallel_sents.append(parallel_sent)
 
