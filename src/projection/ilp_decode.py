@@ -16,7 +16,7 @@ parallel_sentences = pickle.load(open(args.parallel_corpus, "rb"))
 
 def index_by_source(alignments):
     # FIXME here we are aligning roots and roots
-    alignments_by_source = {0: (0, 0, 1)}
+    alignments_by_source = {0: [(0, 0, 1)]}
 
     for s_i, group_of_alignments in groupby(alignments, key=lambda t: t[0]):
         alignments_by_source[s_i] = list(group_of_alignments)
