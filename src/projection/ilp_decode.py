@@ -34,19 +34,23 @@ def build_arc_for_source(parallel_sent: ParallelSentence):
     for source_sent in parallel_sent.sources:
         alignments_by_source = index_by_source(source_sent.alignments)
 
-        source_row = source_sent.weights.row
-        source_col = source_sent.weights.col
+        # Note that we are transposing the matrix here!
+        # After transposing the cell (i, j) corresponds to the arc (i, j).
+        source_row = source_sent.weights.col
+        source_col = source_sent.weights.row
         source_data = source_sent.weights.data
 
         for i in range(source_row.shape[0]):
             s_i = source_row[i]
             s_j = source_col[i]
+            assert s_j > 0
             source_edge_score = source_data[i]
 
             for ta_i, ta_j in product(alignments_by_source.get(s_i, []), alignments_by_source.get(s_j, [])):
                 _, t_i, w_ii = ta_i
                 _, t_j, w_jj = ta_j
 
+                # SUBTLE code
                 arc_list.append(Arc(u=t_i, v=t_j,
                                     u_pos=pos_vocab[source_sent.pos[s_i]],
                                     v_pos=pos_vocab[source_sent.pos[s_j]],
