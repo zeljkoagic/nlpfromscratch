@@ -5,7 +5,7 @@ from collections import defaultdict
 from itertools import groupby, product, count
 
 from arc import Arc
-from ilp_model import build_joint_model, extract_solution
+from ilp_model import build_joint_model, extract_solution, solution_exists
 from parallel_sentence import ParallelSentence
 
 parser = argparse.ArgumentParser(description="Projects dependency trees from source to target via word alignments.")
@@ -72,7 +72,10 @@ for parallel_sent in parallel_sentences:
     # Building model
     model = build_joint_model(maxed_arcs, num_nodes=len(parallel_sent.target))
     model.optimize()
-    heads, pos = extract_solution(maxed_arcs, num_nodes=len(parallel_sent.target))
 
-    print(heads)
-    print(pos)
+    if solution_exists(model):
+        heads, pos = extract_solution(maxed_arcs, num_nodes=len(parallel_sent.target))
+        print(heads)
+        print(pos)
+    else:
+        print('X', end=' ')

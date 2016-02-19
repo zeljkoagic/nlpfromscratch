@@ -69,7 +69,8 @@ def build_joint_model(arc_list: List[Arc], num_nodes: int):
     model.update()
     return model
 
-
+def solution_exists(model):
+    return model.Status == GRB.OPTIMAL
 
 def extract_solution(arc_list: List[Arc], num_nodes: int) -> (List[int], List[str]):
     heads = [-1] * num_nodes
