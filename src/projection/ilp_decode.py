@@ -63,7 +63,7 @@ def build_arc_for_source(parallel_sent: ParallelSentence):
     return arc_list
 
 
-for parallel_sent in parallel_sentences:
+for sent_i, parallel_sent in enumerate(parallel_sentences):
     all_arcs = build_arc_for_source(parallel_sent)
 
     # Take the max over all arcs that share (u, v, u_pos, v_pos)
@@ -74,6 +74,7 @@ for parallel_sent in parallel_sentences:
 
     # Building model
     model = build_joint_model(maxed_arcs, num_nodes=len(parallel_sent.target))
+    model.write('model_{}.lp'.format(sent_i))
     model.optimize()
 
     if solution_exists(model):
