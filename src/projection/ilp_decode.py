@@ -16,7 +16,10 @@ args = parser.parse_args()
 parallel_sentences = pickle.load(open(args.parallel_corpus, "rb"))
 
 pos_counter = count()
-pos_vocab = defaultdict(pos_counter.__next__)
+#pos_vocab = defaultdict(pos_counter.__next__)
+pos_vocab = defaultdict(lambda: 0)
+
+
 
 def index_by_source(alignments):
     # FIXME here we are aligning roots and roots
