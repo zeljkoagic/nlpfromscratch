@@ -29,7 +29,7 @@ def build_joint_model(arc_list: List[Arc], num_nodes: int):
         possible_pos = {arc.u_pos for arc in outgoing_arcs[n]} | {arc.v_pos for arc in incoming_arcs[n]}
         pos_vars[n] = {pos: model.addVar(vtype=GRB.BINARY, name='pos_{}_{}'.format(n, pos))
                        for pos in possible_pos}
-        assert len(pos_vars[n])
+        # assert len(pos_vars[n])
 
     model.update()
 
