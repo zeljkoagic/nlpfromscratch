@@ -20,8 +20,9 @@ def build_joint_model(arc_list: List[Arc], num_nodes: int):
 
     # Variables: a cont. flow variable and an binary variable for each edge
     for arc in arc_list:
-        arc.flow_var = model.addVar(name="flow_" + str(arc))
-        arc.edge_var = model.addVar(vtype=GRB.BINARY, name="edge_" + str(arc))
+        arc.flow_var = model.addVar(name="flow_{}_{}_{}_{}".format(arc.u, arc.v, arc.u_pos, arc.v_pos))
+        arc.edge_var = model.addVar(vtype=GRB.BINARY,
+                                    name="edge_{}_{}_{}_{}".format(arc.u, arc.v, arc.u_pos, arc.v_pos))
 
     # Variable: a POS variable for each possible token value
     pos_vars = {}
@@ -29,7 +30,7 @@ def build_joint_model(arc_list: List[Arc], num_nodes: int):
         possible_pos = {arc.u_pos for arc in outgoing_arcs[n]} | {arc.v_pos for arc in incoming_arcs[n]}
         pos_vars[n] = {pos: model.addVar(vtype=GRB.BINARY, name='pos_{}_{}'.format(n, pos))
                        for pos in possible_pos}
-        # assert len(pos_vars[n])
+        assert len(pos_vars[n])
 
     model.update()
 
@@ -37,34 +38,41 @@ def build_joint_model(arc_list: List[Arc], num_nodes: int):
     for n in range(1, num_nodes):
         # Constraint: each node has exactly one parent
         incoming_vars = [arc.edge_var for arc in incoming_arcs[n]]
-        model.addConstr(quicksum(incoming_vars) == 1)
+        model.addConstr(quicksum(incoming_vars) == 1,
+                        name='one_parent_' + str(n))
 
         # Constraint: each pos has exactly one value
-        model.addConstr(quicksum(pos_vars[n]) == 1)
+        model.addConstr(quicksum(pos_vars[n].values()) == 1,
+                        name='one_pos_' + str(n))
 
         # Constraint: Each node consumes one unit of flow
         in_flow = [arc.flow_var for arc in incoming_arcs[n]]
         out_flow = [arc.flow_var for arc in outgoing_arcs[n]]
-        model.addConstr(quicksum(in_flow) - quicksum(out_flow) == 1)
+        model.addConstr(quicksum(in_flow) - quicksum(out_flow) == 1,
+                        name='consume_one_flow_unit_' + str(n))
 
     # Connectivity constraint. Root sends flow to each node
     root_out_flow = [arc.flow_var for arc in outgoing_arcs[0]]
-    model.addConstr(quicksum(root_out_flow) == (num_nodes - 1))
+    model.addConstr(quicksum(root_out_flow) == (num_nodes - 1),
+                    name='root_flow')
 
     # Inactive arcs have no flow
     LARGE_NUMBER = 1000
     for arc in arc_list:
-        model.addConstr(arc.flow_var <= (arc.edge_var * LARGE_NUMBER))
+        model.addConstr(arc.flow_var <= (arc.edge_var * LARGE_NUMBER),
+                        name='inactive_no_flow_{}_{}_{}_{}'.format(arc.u, arc.v, arc.u_pos, arc.v_pos))
 
     # Setup objective
     terms = [arc.edge_var * arc.weight for arc in arc_list]
-    model.setObjective(quicksum(terms))
+    model.setObjective(quicksum(terms), GRB.MAXIMIZE)
 
     # Missing: Constraint POS with respect to edges
     for arc in arc_list:
         if arc.u != 0:
-            model.addConstr(pos_vars[arc.u][arc.u_pos] >= arc.edge_var)
-        model.addConstr(pos_vars[arc.v][arc.v_pos] >= arc.edge_var)
+            model.addConstr(pos_vars[arc.u][arc.u_pos] >= arc.edge_var,
+                            name='arc_{}_{}_{}_{}_pos_must_match_u'.format(arc.u, arc.v, arc.u_pos, arc.v_pos))
+        model.addConstr(pos_vars[arc.v][arc.v_pos] >= arc.edge_var,
+                        name='arc_{}_{}_{}_{}_pos_must_match_v'.format(arc.u, arc.v, arc.u_pos, arc.v_pos))
 
     model.update()
     return model

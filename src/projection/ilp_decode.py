@@ -8,6 +8,9 @@ from arc import Arc
 from ilp_model import build_joint_model, extract_solution, solution_exists
 from parallel_sentence import ParallelSentence
 
+import numpy as np
+from dependency_decoding import chu_liu_edmonds
+
 parser = argparse.ArgumentParser(description="Projects dependency trees from source to target via word alignments.")
 
 parser.add_argument("parallel_corpus", help="Pickle file with parallel sentences")
@@ -16,8 +19,8 @@ args = parser.parse_args()
 parallel_sentences = pickle.load(open(args.parallel_corpus, "rb"))
 
 pos_counter = count()
-#pos_vocab = defaultdict(pos_counter.__next__)
-pos_vocab = defaultdict(lambda: 0)
+pos_vocab = defaultdict(pos_counter.__next__)
+# pos_vocab = defaultdict(lambda: 0)
 
 
 
@@ -53,7 +56,6 @@ def build_arc_for_source(parallel_sent: ParallelSentence):
                 _, t_i, w_ii = ta_i
                 _, t_j, w_jj = ta_j
 
-                # SUBTLE code
                 arc_list.append(Arc(u=t_i, v=t_j,
                                     u_pos=pos_vocab[source_sent.pos[s_i]],
                                     v_pos=pos_vocab[source_sent.pos[s_j]],
@@ -64,22 +66,58 @@ def build_arc_for_source(parallel_sent: ParallelSentence):
 
 
 for sent_i, parallel_sent in enumerate(parallel_sentences):
+    num_target_nodes = len(parallel_sent.target)
     all_arcs = build_arc_for_source(parallel_sent)
 
     # Take the max over all arcs that share (u, v, u_pos, v_pos)
     maxed_arcs = []
     all_arcs = sorted(all_arcs, key=lambda arc: (arc.u, arc.v, arc.u_pos, arc.v_pos, -arc.weight))
     for _, arc_group in groupby(all_arcs, key=lambda arc: (arc.u, arc.v, arc.u_pos, arc.v_pos)):
-        maxed_arcs.append(next(arc_group))
+        max_arc = next(arc_group)
+        maxed_arcs.append(max_arc)
+        assert max_arc.u <= len(parallel_sent.target)
+        assert max_arc.v <= len(parallel_sent.target)
+
+    # Do we have a possible head for each of the tokens?
+    has_head = {arc.v for arc in maxed_arcs}
+    if set(range(1, num_target_nodes)) != has_head:
+        continue
 
     # Building model
-    model = build_joint_model(maxed_arcs, num_nodes=len(parallel_sent.target))
+    model = build_joint_model(maxed_arcs, num_nodes=num_target_nodes)
     model.write('model_{}.lp'.format(sent_i))
+    model.setParam('LogToConsole', 0)
     model.optimize()
 
     if solution_exists(model):
-        heads, pos = extract_solution(maxed_arcs, num_nodes=len(parallel_sent.target))
+        heads, pos = extract_solution(maxed_arcs, num_nodes=num_target_nodes)
+        print('SOLVED: ', sent_i)
+        #print('WE GOT A SOLUTION')
+        rev_pos_vocab = {i: pos_ for pos_, i in pos_vocab.items()}
         print(heads)
         print(pos)
+        print([rev_pos_vocab[tag] for tag in pos[1:]])
     else:
-        print('X', end=' ')
+        # CLE decoding
+        matrix = np.ones((len(parallel_sent.target), len(parallel_sent.target))) * np.nan
+        for arc in maxed_arcs:
+            matrix[arc.v, arc.u] = arc.weight
+
+        cle_decoded_heads, score = chu_liu_edmonds(matrix)
+
+        # Examine the CLE solution to check if it is supported by the list of maxed_arcs
+        non_supported_edges = []
+        for (v, u) in enumerate(cle_decoded_heads[1:], 1):
+            if np.isnan(matrix[v, u]):
+                non_supported_edges.append((u, v))
+
+        if len(non_supported_edges):
+            pass
+            #print('GASP', non_supported_edges)
+        else:
+            print('Double gasp. Everything is supported')
+            #print('Sentence number ' + str(sent_i))
+            #print(matrix)
+            #print(cle_decoded_heads)
+            #print('============================')
+
