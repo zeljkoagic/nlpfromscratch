@@ -14,6 +14,7 @@ from dependency_decoding import chu_liu_edmonds
 parser = argparse.ArgumentParser(description="Projects dependency trees from source to target via word alignments.")
 
 parser.add_argument("parallel_corpus", help="Pickle file with parallel sentences")
+parser.add_argument("--partial", help="Project partial structures", action='store_true')
 args = parser.parse_args()
 
 parallel_sentences = pickle.load(open(args.parallel_corpus, "rb"))
@@ -21,6 +22,7 @@ parallel_sentences = pickle.load(open(args.parallel_corpus, "rb"))
 pos_counter = count()
 pos_vocab = defaultdict(pos_counter.__next__)
 # pos_vocab = defaultdict(lambda: 0)
+UNK_POS = pos_vocab['UNK']
 
 
 
@@ -78,10 +80,18 @@ for sent_i, parallel_sent in enumerate(parallel_sentences):
         assert max_arc.u <= len(parallel_sent.target)
         assert max_arc.v <= len(parallel_sent.target)
 
-    # Do we have a possible head for each of the tokens?
-    has_head = {arc.v for arc in maxed_arcs}
-    if set(range(1, num_target_nodes)) != has_head:
-        continue
+
+    if args.partial:
+        # Allow partial structures
+        min_arc_weight = min(arc.weight for arc in maxed_arcs)
+        for n in range(1, num_target_nodes):
+            maxed_arcs.append(Arc(0, n, 0, UNK_POS, min_arc_weight - 0.01))
+    else:
+        # Do we have a possible head for each of the tokens?
+        has_head = {arc.v for arc in maxed_arcs}
+        if set(range(1, num_target_nodes)) != has_head:
+            continue
+
 
     # Building model
     model = build_joint_model(maxed_arcs, num_nodes=num_target_nodes)
@@ -91,6 +101,7 @@ for sent_i, parallel_sent in enumerate(parallel_sentences):
 
     if solution_exists(model):
         heads, pos = extract_solution(maxed_arcs, num_nodes=num_target_nodes)
+        # print(parallel_sent.gold)
         print('SOLVED: ', sent_i)
         #print('WE GOT A SOLUTION')
         rev_pos_vocab = {i: pos_ for pos_, i in pos_vocab.items()}
@@ -98,26 +109,4 @@ for sent_i, parallel_sent in enumerate(parallel_sentences):
         print(pos)
         print([rev_pos_vocab[tag] for tag in pos[1:]])
     else:
-        # CLE decoding
-        matrix = np.ones((len(parallel_sent.target), len(parallel_sent.target))) * np.nan
-        for arc in maxed_arcs:
-            matrix[arc.v, arc.u] = arc.weight
-
-        cle_decoded_heads, score = chu_liu_edmonds(matrix)
-
-        # Examine the CLE solution to check if it is supported by the list of maxed_arcs
-        non_supported_edges = []
-        for (v, u) in enumerate(cle_decoded_heads[1:], 1):
-            if np.isnan(matrix[v, u]):
-                non_supported_edges.append((u, v))
-
-        if len(non_supported_edges):
-            pass
-            #print('GASP', non_supported_edges)
-        else:
-            print('Double gasp. Everything is supported')
-            #print('Sentence number ' + str(sent_i))
-            #print(matrix)
-            #print(cle_decoded_heads)
-            #print('============================')
-
+        print("-", end=' ')
