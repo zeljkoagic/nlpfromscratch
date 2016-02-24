@@ -65,6 +65,7 @@ args = parser.parse_args()
 # Reading source sentences
 source_sents_by_target = defaultdict(list)
 for pair in args.pairs:
+    pair = pair.split("/")[-1]
     src_lang, _ = pair.split("-")
 
     sent_align_file = (args.base_dir / 'salign' / "{}.{}.sal".format(pair, args.corpus))
@@ -94,7 +95,7 @@ for pair in args.pairs:
 
 
 # Read in target
-target_langs = {pair.split("-")[1] for pair in args.pairs}
+target_langs = {pair.split("-")[1] for pair.split("/")[-1] in args.pairs}
 assert len(target_langs) == 1
 target_lang = list(target_langs)[0]
 
