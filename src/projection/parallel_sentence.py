@@ -12,7 +12,8 @@ class SourceSentence:
 
 
 class ParallelSentence:
-    def __init__(self, target: List[str], sources: List[SourceSentence], gold=None):
+    def __init__(self, target: List[str], sources: List[SourceSentence], gold=None, silver=None):
         self.sources = sources
         self.target = target
         self.gold = gold
+        self.silver = silver

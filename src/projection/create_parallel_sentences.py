@@ -101,22 +101,31 @@ target_lang = list(target_langs)[0]
 target_sent_file = (args.base_dir / 'conll' / '{}.{}.conll'.format(target_lang, args.corpus))
 target_sents = read_sents_from_conll(target_sent_file)
 
+# Read gold parses
 target_gold_file = (args.base_dir / 'gold' / '{}.{}.conll'.format(target_lang, args.corpus))
 
 target_gold_parses = []
 if target_gold_file.is_file():
     target_gold_parses = read_gold_parses(target_gold_file)
 
+# Read silver parses
+target_silver_file = (args.base_dir / 'silves' / '{}.{}.conll'.format(target_lang, args.corpus))
+
+target_silver_parses = []
+if target_silver_file .is_file():
+    target_silver_parses = read_gold_parses(target_silver_file)
+
+
 # Assemble parallel sentences
 parallel_sents = []
 for target_sent_id, target_sent in enumerate(target_sents):
-    if target_sent_id < len(target_gold_parses):
-        gold_parse = target_gold_parses[target_sent_id]
-    else:
-        gold_parse = None
+    gold_parse = target_gold_parses[target_sent_id] if target_sent_id < len(target_gold_parses) else None
+    silver_parse = target_silver_parses[target_sent_id] if target_sent_id < len(target_silver_parses) else None
+
     parallel_sent = ParallelSentence(target=target_sent,
                                      sources=source_sents_by_target[target_sent_id],
-                                     gold=gold_parse)
+                                     gold=gold_parse,
+                                     silver=silver_parse)
     if len(parallel_sent.sources) >= 1:
         parallel_sents.append(parallel_sent)
 
