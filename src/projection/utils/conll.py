@@ -155,7 +155,23 @@ def get_next_sentence_and_tree_old(conll_file_handle):
     return next_sentence, next_graph, parts_of_speech
 
 
+def write_conll06_sentence(forms, heads, pos_tags, file):
+    assert len(forms) == len(heads)
+    assert len(forms) == len(pos_tags)
 
+    for i in range(1, len(forms)):
+        parts = [str(i), # id
+                 forms[i], # form
+                 '_', # lemma
+                 pos_tags[i], # coarse pos
+                 pos_tags[i], # fine pos
+                 '_', # feats
+                 str(heads[i]), # head
+                 'dep' # deprel
+                 ]
+        print("\t".join(parts), file=file)
+
+    print(file=file)
 
 def sentences(conll_file_handle, sentence_getter):
     """Sentence generator for CoNLL-style files.
