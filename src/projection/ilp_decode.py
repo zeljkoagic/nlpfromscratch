@@ -24,10 +24,13 @@ parser.add_argument("--solution-file", help="Pickle solutions here. "
                                             "Solutions are aligned with the input parallel sentences",
                     type=Path)
 parser.add_argument("--conll-file", help="Projected sentences written here", type=Path)
+parser.add_argument('--limit', help="Limit the number of instances to this", type=int)
 
 args = parser.parse_args()
 
 parallel_sentences = pickle.load(open(args.parallel_corpus, "rb"))
+if args.limit:
+    parallel_sentences = parallel_sentences[:args.limit]
 
 if args.coarse:
     pos_vocab = Vocab(next_fn=repeat(1))
@@ -70,6 +73,9 @@ def print_eval_solutions(parallel_sentences, solutions):
             predictions['gold_pos'].extend(gold_pos[1:])
 
         sol_id += 1
+
+    if len(predictions['sol_id']) == 0:
+        return
 
     predictions = pd.DataFrame(predictions)
 
@@ -161,6 +167,7 @@ for sent_i, parallel_sent in enumerate(parallel_sentences):
     model = build_joint_model(maxed_arcs, num_nodes=num_target_nodes)
     # model.write('model_{}.lp'.format(sent_i))
     model.setParam('LogToConsole', 0)
+    model.setParam('TimeLimit', 60)
     model.optimize()
 
     if solution_exists(model):
@@ -179,7 +186,7 @@ print_eval_solutions(parallel_sentences, solutions)
 
 # Output CONLL file
 if args.conll_file:
-    with args.conll_file.open('w') as out_file:
+    with args.conll_file.open('w', encoding='utf-8') as out_file:
         for parallel_sent, solution in zip(parallel_sentences, solutions):
             if solution is None:
                 continue
