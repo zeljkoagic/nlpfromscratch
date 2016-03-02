@@ -95,6 +95,9 @@ def build_arc_for_source(parallel_sent: ParallelSentence):
     for source_sent in parallel_sent.sources:
         alignments_by_source = index_by_source(source_sent.alignments)
 
+        # TODO We can standardize the source weights here
+        # source_sent.weights.standardize()
+
         # Note that we are transposing the matrix here!
         # After transposing the cell (i, j) corresponds to the arc (i, j).
         source_row = source_sent.weights.col

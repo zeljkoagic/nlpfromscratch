@@ -110,10 +110,10 @@ if target_gold_file.is_file():
     target_gold_parses = read_gold_parses(target_gold_file)
 
 # Read silver parses
-target_silver_file = (args.base_dir / 'silves' / '{}.{}.conll'.format(target_lang, args.corpus))
+target_silver_file = (args.base_dir / 'silver' / '{}.{}.conll'.format(target_lang, args.corpus))
 
 target_silver_parses = []
-if target_silver_file .is_file():
+if target_silver_file.is_file():
     target_silver_parses = read_gold_parses(target_silver_file)
 
 
