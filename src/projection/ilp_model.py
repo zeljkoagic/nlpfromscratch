@@ -80,7 +80,7 @@ def build_joint_model(arc_list: List[Arc], num_nodes: int):
 def solution_exists(model):
     return model.Status == GRB.OPTIMAL
 
-def extract_solution(arc_list: List[Arc], num_nodes: int) -> (List[int], List[str]):
+def extract_solution(arc_list: List[Arc], num_nodes: int, unk_pos: int=-1) -> (List[int], List[str]):
     heads = [-1] * num_nodes
     pos = [-1] * num_nodes
 
@@ -94,6 +94,10 @@ def extract_solution(arc_list: List[Arc], num_nodes: int) -> (List[int], List[st
 
             assert pos[arc.v] == -1 or pos[arc.v] == arc.v_pos, [str(arc), pos]
             pos[arc.v] = arc.v_pos
+
+            # Re-attach tokens with unknown POS to -1
+            if arc.u_pos == unk_pos:
+                heads[arc.v] = -1
 
     return heads, pos
 
