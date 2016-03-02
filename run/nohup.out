@@ -1,0 +1,30 @@
+Traceback (most recent call last):
+  File "/home/zagic/nlpfromscratch/src/projection/create_parallel_sentences.py", line 73, in <module>
+    for pair_i, line in enumerate(sent_align_file.open()):
+  File "/home/zagic/anaconda3/lib/python3.4/pathlib.py", line 1073, in open
+    opener=self._opener)
+  File "/home/zagic/anaconda3/lib/python3.4/pathlib.py", line 947, in _opener
+    return self._accessor.open(self, flags, mode)
+  File "/home/zagic/anaconda3/lib/python3.4/pathlib.py", line 326, in wrapped
+    return strfunc(str(pathobj), *args)
+FileNotFoundError: [Errno 2] No such file or directory: '/home/zagic/nlpfromscratch/data/salign/*-eu.watchtower.sal'
+Traceback (most recent call last):
+  File "/home/zagic/nlpfromscratch/src/projection/create_parallel_sentences.py", line 73, in <module>
+    for pair_i, line in enumerate(sent_align_file.open()):
+  File "/home/zagic/anaconda3/lib/python3.4/pathlib.py", line 1073, in open
+    opener=self._opener)
+  File "/home/zagic/anaconda3/lib/python3.4/pathlib.py", line 947, in _opener
+    return self._accessor.open(self, flags, mode)
+  File "/home/zagic/anaconda3/lib/python3.4/pathlib.py", line 326, in wrapped
+    return strfunc(str(pathobj), *args)
+FileNotFoundError: [Errno 2] No such file or directory: '/home/zagic/nlpfromscratch/data/salign/*-la.watchtower.sal'
+Traceback (most recent call last):
+  File "/home/zagic/nlpfromscratch/src/projection/create_parallel_sentences.py", line 73, in <module>
+    for pair_i, line in enumerate(sent_align_file.open()):
+  File "/home/zagic/anaconda3/lib/python3.4/pathlib.py", line 1073, in open
+    opener=self._opener)
+  File "/home/zagic/anaconda3/lib/python3.4/pathlib.py", line 947, in _opener
+    return self._accessor.open(self, flags, mode)
+  File "/home/zagic/anaconda3/lib/python3.4/pathlib.py", line 326, in wrapped
+    return strfunc(str(pathobj), *args)
+FileNotFoundError: [Errno 2] No such file or directory: '/home/zagic/nlpfromscratch/data/salign/*-sr.watchtower.sal'
