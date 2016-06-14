@@ -145,6 +145,10 @@ for lines in zip(*vote_handles):
             # to a weight matrix for a given source language
             current_sentence_tensor = add_root_row(np.array(current_sentence_tensor))
 
+            # FIXME Dummy to get stats for number of contributing languages
+            print(current_sentence_tensor.shape[2])
+            continue
+
             # unify the source language matrices into a single a matrix
             # first we sum, then per-row normalize using softmax
             current_sentence_matrix = norm.softmax(vote_weight_matrix(current_sentence_tensor))
