@@ -147,6 +147,7 @@ for lines in zip(*vote_handles):
 
             # FIXME Dummy to get stats for number of contributing languages
             print(current_sentence_tensor.shape[2])
+            current_sentence_tensor = []
             continue
 
             # unify the source language matrices into a single a matrix
