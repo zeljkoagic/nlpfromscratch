@@ -2,7 +2,7 @@ def is_projective(heads):
     proj = True
     spans = set()
     for token, head in enumerate(heads):
-        s = tuple(sorted([token, head]))
+        s = tuple(sorted([token+1, head]))
         spans.add(s)
     for l, h in sorted(spans):
         for l1, h1 in sorted(spans):
