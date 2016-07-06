@@ -148,66 +148,68 @@ class DependencyTree(nx.DiGraph):
 
 
 
-def ud_filter(P,M_in):
+def ud_filter(P,M_in,enforce_function_leaves=True,promote_first_content_to_root=True,enforce_single_root=True,attach_last_punct_to_root=True,punish_punct_nonproj=True):
     M = copy.copy(M_in)
-    P = ["ROOT"] + P # We assume the pos list has no padding
+    P = ["ROOT"] + P # We assume the POS list has no padding
 
-
-    #TODO: Flag each step w a binary parameter
     #1.- enforce leafness of certain POS
-    should_be_leaves = [i for i,pos in enumerate(P) if pos in ONLYLEAF]
-    #print(should_be_leaves)
-    for i in range(M.shape[0]):
-        for j in range(M.shape[1]):
-            if j in should_be_leaves:
-                pass
-                #M[i,j] = NEGINF #[NEGINF if i in should_be_leaves else x for i,x in enumerate(row)]
+    if enforce_function_leaves:
+        should_be_leaves = [i for i,pos in enumerate(P) if pos in ONLYLEAF]
+        for i in range(M.shape[0]):
+            for j in range(M.shape[1]):
+                if j in should_be_leaves:
+                    M[i,j] = NEGINF
 
     #2.- If there is no verb, promote first content word to head
     # Note that a copula verb should be AUX for this to work, this convention is f.i. not followed in the English UD
-    if "VERB" not in P and CONTENT.intersection(set(P)):
-        first_content_word = 0
-        for i,p in enumerate(P):
-             if p in CONTENT:
-                first_content_word = i
-                likeliest_root = i
-                break
-        for i in range(M.shape[0]):
-            if i != first_content_word:
-                M[i,0] = NEGINF
+    if promote_first_content_to_root:
+        if "VERB" not in P and CONTENT.intersection(set(P)):
+            first_content_word = 0
+            for i,p in enumerate(P):
+                 if p in CONTENT:
+                    first_content_word = i
+                    likeliest_root = i
+                    break
+            for i in range(M.shape[0]):
+                if i != first_content_word:
+                    M[i,0] = NEGINF
 
     # 3.- enforce single root
-    max_root_score = max(M[:, 0])
-    root_counter = 0  # leaves only one possible root, in the binarized case it keeps the very first one
-    for i in range(M.shape[0]):
-         if root_counter > 0:
-             M[i, 0] = NEGINF
-         elif M[i, 0] < max_root_score:
-             M[i, 0] = NEGINF
-         else:
-             likeliest_root = i
-             root_counter += 1
-    #
-    # 4.- Attach last punctuation to likeliest root node
-    if P[-1] == "PUNCT":
-         for x in range(M.shape[1]):
-             if x != likeliest_root:
-                 M[-1,x]=NEGINF
+    if enforce_single_root:
+        max_root_score = max(M[:, 0])
+        root_counter = 0  # leaves only one possible root, in the binarized case it keeps the very first one
+        for i in range(M.shape[0]):
+             if root_counter > 0:
+                 M[i, 0] = NEGINF
+             elif M[i, 0] < max_root_score:
+                 M[i, 0] = NEGINF
              else:
-                 M[-1, x] = M_in[-1,likeliest_root]
-    #
-    heads=chu_liu_edmonds(M)
-    heads=heads[0]
+                 likeliest_root = i
+                 root_counter += 1
 
-    sent = DependencyTree()
-    for n,p in enumerate(P):
-        sent.add_node(n,{'cpostag':p})
-    for n in sent.nodes()[1:]:
-        sent.add_edge(heads[n],n)
+    # 4.- Attach last punctuation to likeliest root node
+    if attach_last_punct_to_root:
+        if P[-1] == "PUNCT":
+             for x in range(M.shape[1]):
+                 if x != likeliest_root:
+                     M[-1,x]=NEGINF
+                 else:
+                     M[-1, x] = M_in[-1,likeliest_root]
 
-    #print(sent.punct_proj_violations(), is_projective(heads), heads, P)
-    for i in sent.punct_proj_violations(): #block the existing head
-        M[i,heads[i]]=NEGINF
+    # 5.- Retrieve PUNCT words that participate in a non projectivity and disable their current head.
+    # This modification does not remove projectivity altogether because the head will still be assigned with CLE
+    if punish_punct_nonproj:
+        heads=chu_liu_edmonds(M)
+        heads=heads[0]
+
+        sent = DependencyTree()
+        for n,p in enumerate(P):
+            sent.add_node(n,{'cpostag':p})
+        for n in sent.nodes()[1:]:
+            sent.add_edge(heads[n],n)
+        #print(sent.punct_proj_violations(), is_projective(heads), heads, P)
+        for i in sent.punct_proj_violations(): #block the existing head
+            M[i,heads[i]]=NEGINF
     return M
 
 
