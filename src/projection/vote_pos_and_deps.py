@@ -68,8 +68,10 @@ current_pos_tags = []
 # current_dep_labels = []
 current_sentence_tensor = []
 current_sentence_source_languages = []
-
 current_number_of_unaligned_tokens = 0
+current_sentence_string = ""
+
+all_output_sentences = []  # items: (sentence_string, mean_coverage)
 
 skip_sentence = False  # skip sentences with empty sources
 vote_handles = [projection_file.open() for projection_file in args.projections]
@@ -141,9 +143,8 @@ for lines in zip(*vote_handles):
 
         current_sentence = conll.get_next_sentence(target_file_handle)  # has to be run even if skip_sentence == True!
 
-        print("OOO", len(vote_handles), len(current_sentence), current_number_of_unaligned_tokens,
-              ((len(vote_handles) * len(current_sentence)) - current_number_of_unaligned_tokens)/(len(vote_handles) * len(current_sentence))
-              )
+        its_mean_coverage = ((len(vote_handles) * len(current_sentence)) - current_number_of_unaligned_tokens) / \
+                            (len(vote_handles) * len(current_sentence))
 
         if not skip_sentence:
 
@@ -196,20 +197,26 @@ for lines in zip(*vote_handles):
                 scorer.update(old_token, token)
 
                 # print(token, " ".join(map(str, current_sentence_matrix[jt, ])))
-                print(token)  # we don't need the weights anymore
+                current_sentence_string += token.__str__()  # we don't need the weights anymore
                 jt += 1
-            print()
+                current_sentence_string += "\n"
 
         skip_sentence = False  # we don't yet know whether to skip the next one or not, so reset the flag
+
+        all_output_sentences.append(current_sentence_string, its_mean_coverage)
+
         current_sentence_tensor = []
         current_pos_tags = []
         current_dep_labels = []
         current_number_of_unaligned_tokens = 0
+        current_sentence_string = ""
 
         if args.stop_after and int(args.stop_after) == sentence_count:
             break
 
 # assert all(h.read() == "" for h in vote_handles), "Projections differ in size"
+
+print(all_output_sentences[:10])
 
 print("Scores:", " ".join(map(str, scorer.get_score_list())), file=sys.stderr)
 print("Execution time: %s sec" % (time.time() - start_time), file=sys.stderr)
