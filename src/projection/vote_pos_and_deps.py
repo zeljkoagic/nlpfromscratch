@@ -140,7 +140,7 @@ for lines in zip(*vote_handles):
 
         #print(np.mean(current_sentence_coverages))
         #current_sentence_coverages = []
-        continue
+        #continue
 
         current_sentence = conll.get_next_sentence(target_file_handle)  # has to be run even if skip_sentence == True!
 
