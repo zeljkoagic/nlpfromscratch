@@ -203,9 +203,9 @@ for lines in zip(*vote_handles):
                 jt += 1
                 current_sentence_string += "\n"
 
-        skip_sentence = False  # we don't yet know whether to skip the next one or not, so reset the flag
+            all_output_sentences.append((current_sentence_string, its_mean_coverage))
 
-        all_output_sentences.append((current_sentence_string, its_mean_coverage))
+        skip_sentence = False  # we don't yet know whether to skip the next one or not, so reset the flag
 
         current_sentence_tensor = []
         current_pos_tags = []
