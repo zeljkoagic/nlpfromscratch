@@ -130,7 +130,7 @@ for lines in zip(*vote_handles):
         current_pos_tags.append(overall_pos_votes.most_common(1)[0][0])
         # current_dep_labels.append(overall_label_votes.most_common(1)[0][0])
 
-        print(sum([1 for x in current_pos_tags if x == "_"]), len(current_pos_tags))
+        print(len([x for x in current_pos_tags if x == "_"]), len(current_pos_tags))
 
         # skip sentences with at least one placeholder "_" POS tag (or dependency label?)
         if args.skip_untagged and current_pos_tags[-1] == "_":  # or current_dep_labels[-1] == "_": TODO everything gets skipped if dep=="_"!
