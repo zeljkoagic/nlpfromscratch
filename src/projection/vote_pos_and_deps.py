@@ -203,7 +203,7 @@ for lines in zip(*vote_handles):
 
         skip_sentence = False  # we don't yet know whether to skip the next one or not, so reset the flag
 
-        all_output_sentences.append(current_sentence_string, its_mean_coverage)
+        all_output_sentences.append((current_sentence_string, its_mean_coverage))
 
         current_sentence_tensor = []
         current_pos_tags = []
