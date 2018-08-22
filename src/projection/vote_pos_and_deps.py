@@ -68,7 +68,6 @@ current_pos_tags = []
 # current_dep_labels = []
 current_sentence_tensor = []
 current_sentence_source_languages = []
-current_sentence_coverages = []
 
 skip_sentence = False  # skip sentences with empty sources
 vote_handles = [projection_file.open() for projection_file in args.projections]
@@ -114,6 +113,7 @@ for lines in zip(*vote_handles):
 
             # add single source counts to the overall pool
             overall_pos_votes.update(source_pos_counter)
+            print(overall_pos_votes)
             # overall_label_votes.update(source_label_counter)
 
             # collect heads for current source
@@ -136,13 +136,7 @@ for lines in zip(*vote_handles):
 
     elif lines[0] == "\n":
 
-        #print(np.mean(current_sentence_coverages))
-        #current_sentence_coverages = []
-        #continue
-
         current_sentence = conll.get_next_sentence(target_file_handle)  # has to be run even if skip_sentence == True!
-
-        print("_" in current_pos_tags)
 
         if not skip_sentence:
 
