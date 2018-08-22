@@ -113,7 +113,7 @@ for lines in zip(*vote_handles):
 
             # add single source counts to the overall pool
             overall_pos_votes.update(source_pos_counter)
-            print(overall_pos_votes)
+            print(source_language_name, source_pos_counter)
             # overall_label_votes.update(source_label_counter)
 
             # collect heads for current source
