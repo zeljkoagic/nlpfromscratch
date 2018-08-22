@@ -69,6 +69,8 @@ current_pos_tags = []
 current_sentence_tensor = []
 current_sentence_source_languages = []
 
+current_number_of_unaligned_tokens = 0
+
 skip_sentence = False  # skip sentences with empty sources
 vote_handles = [projection_file.open() for projection_file in args.projections]
 
@@ -106,6 +108,8 @@ for lines in zip(*vote_handles):
             for vote in source_pos_votes:
                 pos, num = vote.split(":")
                 source_pos_counter.update({pos: pos_vote_caster(float(num))})
+                if pos == "_":
+                    current_number_of_unaligned_tokens += 1
 
             #for vote in source_label_votes:
             #    label, num = vote.split(":")
@@ -113,7 +117,6 @@ for lines in zip(*vote_handles):
 
             # add single source counts to the overall pool
             overall_pos_votes.update(source_pos_counter)
-            print(source_language_name, source_pos_counter)
             # overall_label_votes.update(source_label_counter)
 
             # collect heads for current source
@@ -135,6 +138,8 @@ for lines in zip(*vote_handles):
             skip_sentence = True
 
     elif lines[0] == "\n":
+
+        print("OOO", current_number_of_unaligned_tokens)
 
         current_sentence = conll.get_next_sentence(target_file_handle)  # has to be run even if skip_sentence == True!
 
@@ -197,6 +202,7 @@ for lines in zip(*vote_handles):
         current_sentence_tensor = []
         current_pos_tags = []
         current_dep_labels = []
+        current_number_of_unaligned_tokens = 0
 
         if args.stop_after and int(args.stop_after) == sentence_count:
             break
