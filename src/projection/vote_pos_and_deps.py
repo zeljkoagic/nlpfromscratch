@@ -50,7 +50,7 @@ parser.add_argument('--pretagged', action='store_true', help="use preassigned ta
 parser.add_argument('--dump_npz', action='store_true', help="dump NPZ debug files")
 parser.add_argument('--skip_untagged', action='store_true', help="skip sentences with untagged tokens")
 parser.add_argument('--decode', action='store_true', help="perform CLE decoding")
-parser.add_argument("--select_top", required=False, help="take n best sentences by mean coverage")
+parser.add_argument("--select_top", required=True, help="take n best sentences by mean coverage", type=int)
 
 args = parser.parse_args()
 
