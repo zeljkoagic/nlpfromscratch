@@ -218,7 +218,7 @@ for lines in zip(*vote_handles):
 # assert all(h.read() == "" for h in vote_handles), "Projections differ in size"
 
 x = all_output_sentences.sort(key=operator.itemgetter(1), reverse=True)
-
+print(x)
 
 print("Scores:", " ".join(map(str, scorer.get_score_list())), file=sys.stderr)
 print("Execution time: %s sec" % (time.time() - start_time), file=sys.stderr)
