@@ -138,7 +138,7 @@ for lines in zip(*vote_handles):
 
     elif lines[0] == "\n":
 
-        print(current_sentence_coverages)
+        print(np.mean(current_sentence_coverages))
         current_sentence_coverages = []
         continue
 
