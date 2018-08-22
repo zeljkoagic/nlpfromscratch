@@ -139,9 +139,9 @@ for lines in zip(*vote_handles):
 
     elif lines[0] == "\n":
 
-        print("OOO", len(vote_handles), len(current_sentence), current_number_of_unaligned_tokens)
-
         current_sentence = conll.get_next_sentence(target_file_handle)  # has to be run even if skip_sentence == True!
+
+        print("OOO", len(vote_handles), len(current_sentence), current_number_of_unaligned_tokens)
 
         if not skip_sentence:
 
