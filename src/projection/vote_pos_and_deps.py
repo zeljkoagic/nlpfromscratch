@@ -68,9 +68,9 @@ current_pos_tags = []
 # current_dep_labels = []
 current_sentence_tensor = []
 current_sentence_source_languages = []
+current_sentence_coverages = []
 
 skip_sentence = False  # skip sentences with empty sources
-
 vote_handles = [projection_file.open() for projection_file in args.projections]
 
 
@@ -130,11 +130,17 @@ for lines in zip(*vote_handles):
         current_pos_tags.append(overall_pos_votes.most_common(1)[0][0])
         # current_dep_labels.append(overall_label_votes.most_common(1)[0][0])
 
+        current_sentence_coverages.append(sum([1 for x in current_pos_tags if x == "_"]) / len(current_pos_tags))
+
         # skip sentences with at least one placeholder "_" POS tag (or dependency label?)
         if args.skip_untagged and current_pos_tags[-1] == "_":  # or current_dep_labels[-1] == "_": TODO everything gets skipped if dep=="_"!
             skip_sentence = True
 
     elif lines[0] == "\n":
+
+        print(current_sentence_coverages)
+        current_sentence_coverages = []
+        continue
 
         current_sentence = conll.get_next_sentence(target_file_handle)  # has to be run even if skip_sentence == True!
 
