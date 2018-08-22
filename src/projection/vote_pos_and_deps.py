@@ -168,9 +168,9 @@ for lines in zip(*vote_handles):
                 decoded_heads = [0 for _ in current_sentence]
 
             # FIXME Dummy to get stats for number of contributing languages
-            print(current_sentence_tensor.shape[2], proj.is_projective(decoded_heads))
-            current_sentence_tensor = []
-            continue
+            #print(current_sentence_tensor.shape[2], proj.is_projective(decoded_heads))
+            #current_sentence_tensor = []
+            #continue
 
             jt = 0
             for token in current_sentence:
