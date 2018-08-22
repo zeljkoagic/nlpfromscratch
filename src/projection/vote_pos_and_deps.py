@@ -50,6 +50,7 @@ parser.add_argument('--pretagged', action='store_true', help="use preassigned ta
 parser.add_argument('--dump_npz', action='store_true', help="dump NPZ debug files")
 parser.add_argument('--skip_untagged', action='store_true', help="skip sentences with untagged tokens")
 parser.add_argument('--decode', action='store_true', help="perform CLE decoding")
+parser.add_argument("--select_top", required=False, help="take n best sentences by mean coverage")
 
 args = parser.parse_args()
 
@@ -218,7 +219,10 @@ for lines in zip(*vote_handles):
 # assert all(h.read() == "" for h in vote_handles), "Projections differ in size"
 
 all_output_sentences.sort(key=operator.itemgetter(1), reverse=True)
-print(all_output_sentences)
+
+for i in range(0, args.select_top):
+    print(all_output_sentences[i])
+
 
 print("Scores:", " ".join(map(str, scorer.get_score_list())), file=sys.stderr)
 print("Execution time: %s sec" % (time.time() - start_time), file=sys.stderr)
