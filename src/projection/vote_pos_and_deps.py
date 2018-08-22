@@ -142,7 +142,7 @@ for lines in zip(*vote_handles):
 
         current_sentence = conll.get_next_sentence(target_file_handle)  # has to be run even if skip_sentence == True!
 
-        print(sum([1 for x in current_pos_tags if x == "_"]), len(current_sentence))
+        print(len([x for x in current_pos_tags if x == "_"]), len(current_sentence))
 
         if not skip_sentence:
 
