@@ -221,7 +221,7 @@ for lines in zip(*vote_handles):
 all_output_sentences.sort(key=operator.itemgetter(1), reverse=True)
 
 for i in range(0, args.select_top):
-    print(all_output_sentences[i])
+    print(all_output_sentences[i][0])
 
 
 print("Scores:", " ".join(map(str, scorer.get_score_list())), file=sys.stderr)
