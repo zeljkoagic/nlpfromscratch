@@ -1,37 +1,7 @@
 # NLP for almost all languages, almost from scratch
 
-Featuring multi-source annotation projection!
+The repository contains the codebase for the following papers:
+- Agic et al. (2016): [Multilingual Projection for Parsing Truly Low-Resource Languages](https://aclanthology.org/Q16-1022/). TACL 4:301-312.
+- Johannsen et al. (2016): [Joint Part-of-Speech and Dependency Projection from Multiple Sources](https://aclanthology.org/P16-2091/). In Proc. ACL, pp. 561-566.
 
-## Directory structure
-
-data/
-
-    walign/L1-L2.{wal, spairs}          word alignments, sentence pairs (currently fast_align format)
-
-    logs/
-
-    salign/L1-L2.sal                    sentence alignments (currently hunalign format)
-
-    lists/sources.txt, targets.txt      lists of source & target languages, one entry per line
-
-    raw/LANG.osl                        raw text, format: <sentence_id>[\t]<word-split sentence>[\n]
-
-    resources/
-
-        train/SOURCE.{conll, tt}        training sets for taggers and parsers
-
-        test/LANG.{conll, tt}           test sets
-
-tools/
-
-    salign/                             sentence aligners
-
-        hunalign-1.1/
-
-    walign/                             word aligners
-
-src/
-
-    util/
-
-        lowercase.py                    lowercase any text file
+If you have any questions, drop me a line!
